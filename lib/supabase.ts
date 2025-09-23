@@ -36,29 +36,28 @@ export async function signInAdmin(email: string, password: string) {
             throw new Error('Supabase 客户端未初始化，请检查环境变量配置')
         }
 
-        // 查询管理员用户
-        const { data, error } = await supabase
+        // 使用 Supabase Auth 进行登录
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        })
+
+        if (error) {
+            console.error('登录认证失败:', error)
+            throw new Error('邮箱或密码错误')
+        }
+
+        // 查询管理员用户信息
+        const { data: adminUser, error: adminError } = await supabase
             .from('admin_users')
             .select('*')
             .eq('email', email)
             .eq('is_active', true)
             .single()
 
-        console.log('数据库查询结果:', { data, error })
-
-        if (error) {
-            console.error('数据库查询错误:', error)
+        if (adminError) {
+            console.error('查询管理员用户失败:', adminError)
             throw new Error('用户不存在或已被禁用')
-        }
-
-        if (!data) {
-            throw new Error('用户不存在')
-        }
-
-        // 简单的密码验证（生产环境应该使用哈希）
-        if (data.password !== password) {
-            console.error('密码验证失败')
-            throw new Error('密码错误')
         }
 
         console.log('登录成功，更新最后登录时间')
@@ -67,13 +66,13 @@ export async function signInAdmin(email: string, password: string) {
         const { error: updateError } = await supabase
             .from('admin_users')
             .update({ last_login: new Date().toISOString() })
-            .eq('id', data.id)
+            .eq('id', adminUser.id)
 
         if (updateError) {
             console.error('更新登录时间失败:', updateError)
         }
 
-        return { user: data, error: null }
+        return { user: adminUser, error: null }
     } catch (error) {
         console.error('登录过程出错:', error)
         return { user: null, error: error instanceof Error ? error.message : '登录失败' }
