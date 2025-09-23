@@ -95,7 +95,7 @@ const generateMockData = (): DashboardData => {
   }
 }
 
-export const useDashboardStore = create<DashboardState>((set, get) => ({
+export const useDashboardStore = create<DashboardState>((set) => ({
   data: null,
   loading: false,
   error: null,

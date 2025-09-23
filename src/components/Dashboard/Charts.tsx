@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { Card, Row, Col, Spin } from 'antd'
+import { Card, Row, Col } from 'antd'
 import * as echarts from 'echarts'
 import styled from 'styled-components'
 
@@ -133,7 +133,7 @@ const Charts: React.FC<ChartsProps> = ({ userGrowthData, userActivityData, loadi
         ],
         animation: true,
         animationDuration: 1000,
-        animationEasing: 'cubicOut',
+        animationEasing: 'cubicOut' as any,
       }
       
       chart.setOption(option)
@@ -226,7 +226,7 @@ const Charts: React.FC<ChartsProps> = ({ userGrowthData, userActivityData, loadi
         ],
         animation: true,
         animationDuration: 1000,
-        animationEasing: 'elasticOut',
+        animationEasing: 'elasticOut' as any,
       }
       
       chart.setOption(option)

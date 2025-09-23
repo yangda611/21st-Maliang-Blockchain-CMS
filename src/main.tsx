@@ -8,7 +8,7 @@ import './index.css'
 
 // 暗黑主题配置
 const darkTheme = {
-  algorithm: 'dark' as const,
+  algorithm: 'dark' as any,
   token: {
     colorBgBase: '#1a1a1a',
     colorBgContainer: '#2d2d2d',
