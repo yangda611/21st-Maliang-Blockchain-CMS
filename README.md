@@ -1,108 +1,166 @@
-# 21st Maliang Blockchain CMS
+# CMS 管理后台系统
 
-一个现代化的区块链CMS系统，使用Next.js、TypeScript、Tailwind CSS和shadcn/ui构建。
+一个现代化的 CMS 管理后台系统，采用暗黑主题和拟物化设计风格。
 
-## 功能特性
+## ✨ 特性
 
-- 🚀 现代化的Hero页面设计
-- 🎨 使用Tailwind CSS进行样式设计
-- ⚡ 基于Next.js 14的App Router
-- 🔧 TypeScript支持
-- 🎭 Framer Motion动画效果
-- 📱 完全响应式设计
-- 🌙 支持深色模式
+- 🎨 **暗黑主题 + 拟物化设计** - 现代化的 UI 设计
+- 🔐 **完整的鉴权系统** - JWT Token 认证
+- 📊 **数据可视化** - 使用 ECharts 展示用户数据
+- 📱 **响应式设计** - 支持各种屏幕尺寸
+- ⚡ **高性能** - 基于 React 18 + Vite
+- 🎭 **动画效果** - 流畅的页面过渡和交互动画
 
-## 技术栈
+## 🛠️ 技术栈
 
-- **框架**: Next.js 14
-- **语言**: TypeScript
-- **样式**: Tailwind CSS
-- **UI组件**: shadcn/ui
-- **动画**: Framer Motion
-- **图标**: Lucide React
+### 前端
+- **React 18** - 用户界面框架
+- **TypeScript** - 类型安全
+- **Ant Design** - UI 组件库
+- **ECharts** - 数据可视化
+- **Zustand** - 状态管理
+- **React Router** - 路由管理
+- **Styled Components** - CSS-in-JS
+- **Vite** - 构建工具
 
-## 快速开始
+### 后端
+- **Express.js** - Web 服务器
+- **JWT** - 身份认证
+- **bcryptjs** - 密码加密
+- **CORS** - 跨域支持
+
+## 🚀 快速开始
 
 ### 1. 安装依赖
 
 ```bash
+# 安装前端依赖
+npm install
+
+# 安装后端依赖
+cd server
 npm install
 ```
 
-### 2. 启动开发服务器
+### 2. 启动后端服务器
+
+```bash
+cd server
+npm run dev
+```
+
+后端服务器将在 `http://localhost:3001` 启动
+
+### 3. 启动前端开发服务器
 
 ```bash
 npm run dev
 ```
 
-### 3. 打开浏览器
+前端应用将在 `http://localhost:3000` 启动
 
-访问 [http://localhost:3000](http://localhost:3000) 查看应用。
+## 🔑 默认登录信息
 
-## 项目结构
+- **用户名**: `admin`
+- **密码**: `admin123`
+
+## 📁 项目结构
 
 ```
-├── app/                    # Next.js App Router
-│   ├── globals.css        # 全局样式
-│   ├── layout.tsx         # 根布局
-│   └── page.tsx           # 主页
-├── components/            # React组件
-│   └── ui/               # UI组件库
-│       ├── button.tsx    # 按钮组件
-│       ├── animated-group.tsx # 动画组组件
-│       └── hero-section-1.tsx # Hero页面组件
-├── lib/                  # 工具函数
-│   └── utils.ts          # 通用工具函数
-└── public/               # 静态资源
+cms-admin-dashboard/
+├── src/
+│   ├── components/          # 组件
+│   │   ├── Layout/         # 布局组件
+│   │   ├── Dashboard/      # 仪表板组件
+│   │   └── Common/         # 通用组件
+│   ├── pages/              # 页面
+│   ├── store/              # 状态管理
+│   ├── services/           # API 服务
+│   └── main.tsx           # 应用入口
+├── server/                 # 后端服务器
+│   ├── server.js          # 服务器主文件
+│   └── package.json       # 后端依赖
+└── package.json           # 前端依赖
 ```
 
-## 组件说明
+## 🎨 设计特色
 
-### HeroSection
+### 暗黑主题
+- 深色背景色系 (#1a1a1a, #2d2d2d)
+- 蓝色系主色调 (#3b82f6, #1e40af)
+- 高对比度文字颜色
 
-主要的Hero页面组件，包含：
-- 响应式导航栏
-- 动画标题和描述
-- 行动按钮
-- 客户Logo展示区域
-- 背景图片和装饰元素
+### 拟物化风格
+- 玻璃拟态效果 (Glassmorphism)
+- 新拟态阴影 (Neumorphism)
+- 圆角和渐变效果
+- 悬停动画和过渡效果
 
-### 依赖组件
+## 📊 功能模块
 
-- **Button**: 基于shadcn/ui的按钮组件
-- **AnimatedGroup**: 用于创建动画效果的包装组件
+### 1. 登录与鉴权
+- 用户登录验证
+- JWT Token 管理
+- 路由守卫
+- 自动登出
 
-## 自定义
+### 2. 仪表板 (Dashboard)
+- 用户统计卡片
+- 用户增长趋势图
+- 用户活跃度柱状图
+- 用户列表表格
 
-### 修改内容
+### 3. 布局系统
+- 响应式侧边栏
+- 顶部导航栏
+- 主内容区域
+- 移动端适配
 
-编辑 `components/ui/hero-section-1.tsx` 文件来修改：
-- 标题和描述文本
-- 按钮链接
-- 菜单项
-- 客户Logo
+## 🔧 开发说明
 
-### 修改样式
+### 环境变量
+创建 `.env` 文件：
+```
+VITE_API_BASE_URL=http://localhost:3001/api
+```
 
-编辑 `app/globals.css` 文件来修改：
-- 颜色主题
-- 全局样式
+### API 接口
+- `POST /api/auth/login` - 用户登录
+- `GET /api/auth/profile` - 获取用户信息
+- `GET /api/dashboard` - 获取仪表板数据
+- `GET /api/dashboard/refresh` - 刷新仪表板数据
 
-## 部署
+### 状态管理
+使用 Zustand 进行状态管理：
+- `authStore` - 用户认证状态
+- `dashboardStore` - 仪表板数据状态
 
-### Vercel (推荐)
+## 🚀 部署
 
-1. 将代码推送到GitHub
-2. 在Vercel中导入项目
-3. 自动部署
-
-### 其他平台
-
+### 构建生产版本
 ```bash
 npm run build
+```
+
+### 启动生产服务器
+```bash
+cd server
 npm start
 ```
 
-## 许可证
+## 📝 开发计划
+
+- [ ] 用户管理模块
+- [ ] 内容管理模块
+- [ ] 系统设置模块
+- [ ] 权限管理
+- [ ] 数据导出功能
+- [ ] 实时通知系统
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 📄 许可证
 
 MIT License
