@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { SignInPage, Testimonial } from '@/components/ui/sign-in'
 import { signInAdmin, testSupabaseConnection } from '@/lib/supabase'
 
@@ -29,6 +30,7 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [connectionStatus, setConnectionStatus] = useState<string>('检查中...')
+  const router = useRouter()
 
   // 页面加载时测试 Supabase 连接
   useEffect(() => {
@@ -50,13 +52,15 @@ export default function AdminLoginPage() {
 
     try {
       const { user, error } = await signInAdmin(email, password)
-      
+
       if (error) {
         setMessage({ type: 'error', text: error })
       } else if (user) {
         setMessage({ type: 'success', text: '登录成功！欢迎回来，管理员！' })
-        // 这里可以添加跳转到管理后台的逻辑
-        // router.push('/maliang-admin/dashboard')
+        // 跳转到管理后台
+        setTimeout(() => {
+          router.push('/maliang-admin/dashboard')
+        }, 1000)
       }
     } catch (error) {
       setMessage({ type: 'error', text: '登录失败，请检查网络连接' })
@@ -68,7 +72,7 @@ export default function AdminLoginPage() {
   const handleGoogleSignIn = () => {
     setMessage({ type: 'error', text: 'Google 登录功能暂未开放' })
   }
-  
+
   const handleResetPassword = () => {
     setMessage({ type: 'error', text: '密码重置功能暂未开放，请联系系统管理员' })
   }
@@ -82,13 +86,13 @@ export default function AdminLoginPage() {
       {/* 消息提示 */}
       {message && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
-          message.type === 'success' 
-            ? 'bg-green-500 text-white' 
+          message.type === 'success'
+            ? 'bg-green-500 text-white'
             : 'bg-red-500 text-white'
         }`}>
           <div className="flex items-center justify-between">
             <span>{message.text}</span>
-            <button 
+            <button
               onClick={() => setMessage(null)}
               className="ml-4 text-white hover:text-gray-200"
             >
@@ -127,4 +131,3 @@ export default function AdminLoginPage() {
     </div>
   )
 }
-
