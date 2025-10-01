@@ -24,7 +24,13 @@
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_project_url_here
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 ```
+
+### 获取服务角色密钥
+1. 在 Supabase Dashboard 中，进入 "Settings" > "API"
+2. 在 "Project API keys" 部分找到 "service_role" 密钥
+3. 复制服务角色密钥到环境变量中
 
 ## 4. 创建数据库表
 
@@ -106,6 +112,107 @@ npm run dev
 - 内容管理
 - 系统设置
 
+## 🔧 权限配置方案
+
+### 方案1：使用服务角色密钥（推荐）
+✅ **已实施** - 这是最直接的解决方案
+
+系统已经配置了服务角色密钥，可以在用户管理功能中创建新用户：
+
+```typescript
+// 使用服务角色客户端创建用户
+const { data, error } = await supabaseAdmin.auth.admin.createUser({
+  email: newUser.email,
+  password: newUser.password,
+  email_confirm: true,
+});
+```
+
+### 方案2：配置 Supabase RLS (Row Level Security)
+如果需要更细粒度的权限控制，可以配置 RLS 策略：
+
+#### 2.1 启用 RLS
+在 Supabase Dashboard 中：
+1. 进入 `Authentication` > `Policies`
+2. 为 `admin_users` 表启用 RLS
+3. 创建适当的策略
+
+#### 2.2 示例策略
+
+```sql
+-- 只有超级管理员可以创建新用户
+CREATE POLICY "Only super admins can insert users"
+ON admin_users FOR INSERT
+WITH CHECK (
+  auth.uid() IN (
+    SELECT id FROM admin_users
+    WHERE role = 'super_admin' AND is_active = true
+  )
+);
+
+-- 用户只能查看和编辑自己的信息
+CREATE POLICY "Users can view own data"
+ON admin_users FOR SELECT
+USING (auth.uid() = id);
+
+CREATE POLICY "Users can update own data"
+ON admin_users FOR UPDATE
+USING (auth.uid() = id);
+```
+
+## 🔐 安全最佳实践
+
+### 1. 服务角色密钥安全
+- ⚠️ **重要**：服务角色密钥拥有完全访问权限
+- ✅ 只在服务端使用
+- ✅ 永远不要暴露给客户端
+- ✅ 定期轮换密钥
+
+### 2. 权限最小化原则
+- 只授予必要的权限
+- 使用 RLS 策略限制数据访问
+- 定期审查用户权限
+
+### 3. 用户管理最佳实践
+- 实施密码强度要求
+- 启用多因素认证
+- 定期审查用户活动
+- 实施账户锁定策略
+
+## 🚀 部署注意事项
+
+### Vercel 部署
+在 Vercel 环境变量中设置：
+```
+NEXT_PUBLIC_SUPABASE_URL=your_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
+
+### 本地开发
+确保 `.env.local` 文件包含所有必要的环境变量。
+
+## 📝 当前功能状态
+
+- ✅ 用户登录验证
+- ✅ 用户列表显示
+- ✅ 用户信息编辑
+- ✅ 用户状态切换
+- ✅ 用户删除（防止自删除）
+- ✅ 使用服务角色密钥创建新用户
+- 🔄 错误处理和验证
+
+## 🔧 故障排除
+
+如果遇到问题：
+
+1. 检查环境变量是否正确设置
+2. 确认 Supabase 项目 URL 和密钥正确
+3. 验证数据库表是否创建成功
+4. 检查浏览器控制台是否有错误信息
+5. 确认开发服务器正在运行
+6. **权限问题**：确保服务角色密钥正确配置
+
 ## 安全注意事项
 
 ⚠️ **重要提醒：**
@@ -113,6 +220,7 @@ npm run dev
 - 建议启用 Supabase 的 Row Level Security (RLS)
 - 添加会话管理和 JWT 令牌验证
 - 实施更严格的访问控制
+- **服务角色密钥安全**：不要将服务角色密钥暴露给客户端
 
 ## 故障排除
 

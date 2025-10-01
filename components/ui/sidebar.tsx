@@ -13,7 +13,7 @@ export function Sidebar({ activeItem = 'home' }: SidebarProps) {
 
   const menuItems = [
     { id: 'home', label: '首页', icon: Home, path: '/maliang-admin/dashboard' },
-    { id: 'users', label: '用户管理', icon: Users, path: '/maliang-admin/dashboard/users' },
+    { id: 'users', label: '员工管理', icon: Users, path: '/maliang-admin/dashboard/users' },
     { id: 'analytics', label: '数据分析', icon: BarChart3, path: '/maliang-admin/dashboard/analytics' },
     { id: 'settings', label: '系统设置', icon: Settings, path: '/maliang-admin/dashboard/settings' },
   ];
