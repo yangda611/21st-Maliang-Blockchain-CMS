@@ -64,7 +64,7 @@ async function executeSimpleSQL() {
       `);
 
     } catch (dropError) {
-      console.log('⚠️ 删除现有对象时出现警告（可能是因为对象不存在）:', dropError.message);
+      console.log('⚠️ 删除现有对象时出现警告（可能是因为对象不存在）:', dropError instanceof Error ? dropError.message : String(dropError));
     }
 
     // 启用必要的扩展
