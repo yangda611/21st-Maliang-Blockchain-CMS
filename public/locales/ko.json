@@ -1,0 +1,74 @@
+{
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "편집",
+    "add": "추가",
+    "search": "검색",
+    "filter": "필터",
+    "view": "보기",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "submit": "제출",
+    "reset": "재설정",
+    "confirm": "확인",
+    "close": "닫기",
+    "yes": "예",
+    "no": "아니오"
+  },
+  "nav": {
+    "home": "홈",
+    "products": "제품",
+    "articles": "기사",
+    "about": "회사 소개",
+    "contact": "문의하기"
+  },
+  "hero": {
+    "title": "Maliang 블록체인 CMS",
+    "subtitle": "블록체인 기술 기반의 현대적인 콘텐츠 관리 시스템, 다국어 및 다크 SF 스타일 디자인 지원",
+    "cta": {
+      "admin": "관리 패널 들어가기",
+      "products": "제품 보기"
+    },
+    "badge": "블록체인 기술 기반"
+  },
+  "features": {
+    "title": "Maliang을 선택하는 이유",
+    "subtitle": "블록체인 기술과 현대적인 디자인 컨셉을 결합한 엔터프라이즈급 콘텐츠 관리 시스템 솔루션을 제공합니다",
+    "security": {
+      "title": "블록체인 보안",
+      "description": "블록체인 기술을 기반으로 콘텐츠의 보안성과 변경 불가능성을 보장"
+    },
+    "performance": {
+      "title": "고성능",
+      "description": "최적화된 아키텍처 설계로 높은 동시성 접근과 빠른 응답 지원"
+    },
+    "multilingual": {
+      "title": "다국어 지원",
+      "description": "6개 주요 언어 지원으로 글로벌 시장을 쉽게 확장"
+    },
+    "design": {
+      "title": "현대적인 디자인",
+      "description": "다크 SF 스타일 디자인, 현대 기업을 위해 만들어진"
+    }
+  },
+  "stats": {
+    "languages": "지원 언어",
+    "uptime": "가동 시간",
+    "support": "기술 지원"
+  },
+  "footer": {
+    "products": "제품",
+    "support": "지원",
+    "company": "회사",
+    "legal": "법적",
+    "copyright": "© 2025 Maliang CMS. 모든 권리 보유.",
+    "blockchain": "블록체인 기술 기반 구축",
+    "design": "다크 SF 스타일 디자인"
+  }
+}

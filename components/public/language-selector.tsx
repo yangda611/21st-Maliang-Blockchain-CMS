@@ -1,0 +1,85 @@
+/**
+ * Language Selector Component
+ * Allows users to switch between supported languages
+ */
+
+'use client';
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Globe, ChevronDown, Check } from 'lucide-react';
+import { useLanguageSwitcher } from '@/hooks/use-language';
+
+export default function LanguageSelector() {
+  const { languages, currentLanguage, switchLanguage } = useLanguageSwitcher();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleLanguageChange = (languageCode: string) => {
+    switchLanguage(languageCode as any);
+    setIsOpen(false);
+  };
+
+  const currentLang = languages.find(lang => lang.isActive);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
+        aria-label="Select language"
+      >
+        <Globe className="h-4 w-4 text-white/60" />
+        <span className="text-sm text-white/80">
+          {currentLang?.nativeName || currentLang?.name || currentLanguage}
+        </span>
+        <ChevronDown className={`h-3 w-3 text-white/60 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40"
+              onClick={() => setIsOpen(false)}
+            />
+
+            {/* Dropdown */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -10 }}
+              transition={{ duration: 0.15 }}
+              className="absolute top-full right-0 mt-2 w-48 bg-black border border-white/20 rounded-lg shadow-lg z-50 overflow-hidden"
+            >
+              {languages.map((language) => (
+                <button
+                  key={language.code}
+                  onClick={() => handleLanguageChange(language.code)}
+                  className={`w-full px-4 py-3 text-left flex items-center justify-between hover:bg-white/5 transition-colors ${
+                    language.isActive ? 'bg-white/10' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-white">
+                      {language.nativeName}
+                    </span>
+                    <span className="text-xs text-white/60 uppercase">
+                      {language.code}
+                    </span>
+                  </div>
+                  {language.isActive && (
+                    <Check className="h-4 w-4 text-white" />
+                  )}
+                </button>
+              ))}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

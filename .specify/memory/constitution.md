@@ -1,50 +1,37 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# 21st Maliang Blockchain CMS Constitution
+<!-- Sync Impact Report:
+Version change: N/A → 1.0.0 (new constitution)
+Modified principles: All principles updated to reflect project-specific requirements
+Added sections: Technical Architecture, Development Workflow (replaced generic placeholders)
+Removed sections: None
+Templates requiring updates: ✅ plan-template.md (updated version reference), spec-template.md (no changes needed), tasks-template.md (no changes needed), agent-file-template.md (no changes needed)
+Follow-up TODOs: None - constitution is complete and all placeholders filled
+-->
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. User Experience First
+All features must prioritize seamless, responsive user experiences with smooth animations and no-refresh interactions to engage visitors effectively. Components should provide intuitive navigation and immediate feedback to enhance user satisfaction and retention.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Dark Sci-Fi Aesthetic
+Maintain a consistent dark sci-fi visual style across all components, ensuring a modern, tech-forward appearance that aligns with blockchain themes. Use dark color schemes, subtle gradients, and futuristic design elements to create an immersive, professional atmosphere.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Content Management Excellence
+Enable robust product news display, customer contact collection, and SEO optimization features to support company product promotion goals. The CMS must facilitate easy content creation, management, and distribution while ensuring search engine visibility and lead generation capabilities.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Performance Optimization
+Implement efficient loading, caching, and SEO best practices to ensure fast, accessible, and search-engine friendly web experiences. Pages must load quickly, handle various device sizes gracefully, and maintain performance under different network conditions.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Technological Consistency
+Utilize the specified tech stack (Next.js 14 with App Router, TypeScript, Tailwind CSS, shadcn/ui, Framer Motion, Supabase) consistently across all components. All new features must integrate seamlessly with this stack and avoid introducing incompatible technologies without justification.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Technical Architecture
+The system must use Next.js 14 with App Router for the frontend framework, TypeScript for type safety, Tailwind CSS for styling, shadcn/ui for reusable UI components, Framer Motion for animations, and Supabase for backend services including authentication and database operations. All code must be responsive, avoid page refreshes where possible, and maintain the dark sci-fi aesthetic through consistent styling and component design.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Development Workflow
+Development must follow responsive design principles with mobile-first approach, implement smooth transition animations using Framer Motion, and ensure no-refresh user interactions through client-side routing. Code reviews must verify adherence to the dark theme, component reusability, and performance standards. Testing should include user experience validation, SEO optimization checks, and cross-device compatibility testing.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+This constitution supersedes all other development practices and design decisions. Amendments require team approval, must be documented with rationale, and include a migration plan for existing code. All pull requests and code reviews must verify compliance with these principles. Complexity introduced must be justified by clear user benefit or technical necessity. Use this constitution for all development guidance and decision-making.
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2025-10-02 | **Last Amended**: 2025-10-02

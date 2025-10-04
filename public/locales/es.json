@@ -1,0 +1,74 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "view": "Ver",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "reset": "Restablecer",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "nav": {
+    "home": "Inicio",
+    "products": "Productos",
+    "articles": "Artículos",
+    "about": "Acerca de Nosotros",
+    "contact": "Contáctanos"
+  },
+  "hero": {
+    "title": "Maliang Blockchain CMS",
+    "subtitle": "Sistema moderno de gestión de contenido basado en tecnología blockchain, compatible con múltiples idiomas y diseño oscuro de ciencia ficción",
+    "cta": {
+      "admin": "Entrar al Panel de Administración",
+      "products": "Ver Productos"
+    },
+    "badge": "Impulsado por Tecnología Blockchain"
+  },
+  "features": {
+    "title": "Por Qué Elegir Maliang",
+    "subtitle": "Proporcionamos soluciones de sistema de gestión de contenido de nivel empresarial, combinando tecnología blockchain y conceptos de diseño moderno",
+    "security": {
+      "title": "Seguridad Blockchain",
+      "description": "Basado en tecnología blockchain, asegura la seguridad del contenido e inmutabilidad"
+    },
+    "performance": {
+      "title": "Alto Rendimiento",
+      "description": "Diseño de arquitectura optimizado, soporta acceso concurrente alto y respuesta rápida"
+    },
+    "multilingual": {
+      "title": "Soporte Multi-idioma",
+      "description": "Soporta 6 idiomas principales, expande fácilmente mercados globales"
+    },
+    "design": {
+      "title": "Diseño Moderno",
+      "description": "Diseño de estilo ciencia ficción oscuro, creado para empresas modernas"
+    }
+  },
+  "stats": {
+    "languages": "Idiomas Soportados",
+    "uptime": "Tiempo de Actividad",
+    "support": "Soporte Técnico"
+  },
+  "footer": {
+    "products": "Productos",
+    "support": "Soporte",
+    "company": "Empresa",
+    "legal": "Legal",
+    "copyright": "© 2025 Maliang CMS. Todos los derechos reservados.",
+    "blockchain": "Construido en Tecnología Blockchain",
+    "design": "Diseño Ciencia Ficción Oscura"
+  }
+}

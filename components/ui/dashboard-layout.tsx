@@ -39,6 +39,12 @@ export default function DashboardLayout() {
         }
 
         // 获取用户信息
+        if (!session.user.email) {
+          console.error('用户邮箱不存在');
+          router.push('/maliang-admin');
+          return;
+        }
+
         const { data: userData, error: userError } = await supabase
           .from('admin_users')
           .select('*')

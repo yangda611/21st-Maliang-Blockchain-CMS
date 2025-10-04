@@ -56,11 +56,9 @@ export default function AdminLoginPage() {
       if (error) {
         setMessage({ type: 'error', text: error })
       } else if (user) {
-        setMessage({ type: 'success', text: '登录成功！欢迎回来，管理员！' })
-        // 跳转到管理后台
-        setTimeout(() => {
-          router.push('/maliang-admin/dashboard')
-        }, 1000)
+        // 登录成功后立即跳转到后台仪表板
+        console.log('Login successful, redirecting to dashboard...')
+        window.location.href = '/maliang-admin/dashboard'
       }
     } catch (error) {
       setMessage({ type: 'error', text: '登录失败，请检查网络连接' })

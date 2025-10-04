@@ -2,12 +2,14 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
+import { LanguageProvider } from '@/hooks/use-language'
+import { SUPPORTED_LANGUAGES } from '@/middleware'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: '21st Maliang Blockchain CMS',
-  description: 'Modern Solutions for Customer Engagement',
+  title: 'Codexia Blockchain CMS',
+  description: 'Blockchain traceability, anti-counterfeit and enterprise branding CMS',
 }
 
 export default function RootLayout({
@@ -17,14 +19,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <LanguageProvider
+            isAdmin={false}
+            initialLanguage="zh"
+          >
+            {children}
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>
