@@ -1,0 +1,74 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "view": "View",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "reset": "Reset",
+    "confirm": "Confirm",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "articles": "Articles",
+    "about": "About Us",
+    "contact": "Contact Us"
+  },
+  "hero": {
+    "title": "Maliang Blockchain CMS",
+    "subtitle": "Modern content management system based on blockchain technology, supporting multi-language and dark sci-fi design",
+    "cta": {
+      "admin": "Enter Admin Panel",
+      "products": "View Products"
+    },
+    "badge": "Powered by Blockchain Technology"
+  },
+  "features": {
+    "title": "Why Choose Maliang",
+    "subtitle": "We provide enterprise-grade content management system solutions, combining blockchain technology and modern design concepts",
+    "security": {
+      "title": "Blockchain Security",
+      "description": "Based on blockchain technology, ensuring content security and immutability"
+    },
+    "performance": {
+      "title": "High Performance",
+      "description": "Optimized architecture design, supporting high concurrency access and fast response"
+    },
+    "multilingual": {
+      "title": "Multi-language Support",
+      "description": "Supports 6 mainstream languages, easily expand global markets"
+    },
+    "design": {
+      "title": "Modern Design",
+      "description": "Dark sci-fi style design, crafted for modern enterprises"
+    }
+  },
+  "stats": {
+    "languages": "Supported Languages",
+    "uptime": "Uptime",
+    "support": "Technical Support"
+  },
+  "footer": {
+    "products": "Products",
+    "support": "Support",
+    "company": "Company",
+    "legal": "Legal",
+    "copyright": "© 2025 Maliang CMS. All rights reserved.",
+    "blockchain": "Built on Blockchain Technology",
+    "design": "Dark Sci-Fi Design"
+  }
+}

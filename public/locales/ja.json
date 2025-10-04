@@ -1,0 +1,74 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "add": "追加",
+    "search": "検索",
+    "filter": "フィルター",
+    "view": "表示",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "submit": "送信",
+    "reset": "リセット",
+    "confirm": "確認",
+    "close": "閉じる",
+    "yes": "はい",
+    "no": "いいえ"
+  },
+  "nav": {
+    "home": "ホーム",
+    "products": "製品",
+    "articles": "記事",
+    "about": "会社情報",
+    "contact": "お問い合わせ"
+  },
+  "hero": {
+    "title": "MaliangブロックチェーンCMS",
+    "subtitle": "ブロックチェーン技術に基づく現代的なコンテンツ管理システム、多言語とダークSFスタイルデザインをサポート",
+    "cta": {
+      "admin": "管理パネルに入る",
+      "products": "製品を見る"
+    },
+    "badge": "ブロックチェーン技術による"
+  },
+  "features": {
+    "title": "Maliangを選ぶ理由",
+    "subtitle": "ブロックチェーン技術と現代的なデザインコンセプトを組み合わせたエンタープライズグレードのコンテンツ管理システムソリューションを提供します",
+    "security": {
+      "title": "ブロックチェーンセキュリティ",
+      "description": "ブロックチェーン技術に基づき、コンテンツのセキュリティと改ざん不可能性を確保"
+    },
+    "performance": {
+      "title": "高性能",
+      "description": "最適化されたアーキテクチャ設計、高い同時アクセスと高速応答をサポート"
+    },
+    "multilingual": {
+      "title": "多言語サポート",
+      "description": "6つの主流言語をサポートし、グローバル市場を簡単に拡大"
+    },
+    "design": {
+      "title": "現代的なデザイン",
+      "description": "ダークSFスタイルデザイン、現代企業向けに作られた"
+    }
+  },
+  "stats": {
+    "languages": "サポート言語",
+    "uptime": "稼働率",
+    "support": "技術サポート"
+  },
+  "footer": {
+    "products": "製品",
+    "support": "サポート",
+    "company": "会社",
+    "legal": "法的",
+    "copyright": "© 2025 Maliang CMS. 全著作権所有。",
+    "blockchain": "ブロックチェーン技術に基づいて構築",
+    "design": "ダークSFスタイルデザイン"
+  }
+}

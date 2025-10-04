@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 // --- HELPER COMPONENTS (ICONS) ---
@@ -50,10 +50,10 @@ const TestimonialCard = ({ testimonial, delay }: { testimonial: Testimonial, del
     </div>
   </div>
 );
-
 // --- MAIN COMPONENT ---
 
 export const SignInPage: React.FC<SignInPageProps> = ({
+
   title = <span className="font-light text-foreground tracking-tighter">Welcome</span>,
   description = "Access your account and continue your journey with us",
   heroImageSrc,
@@ -64,6 +64,14 @@ export const SignInPage: React.FC<SignInPageProps> = ({
   onCreateAccount,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // 始终阻止表单的默认提交（避免 GET 把表单字段拼到 URL 上）
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log('[SignInPage] onSubmit prevented, calling onSignIn');
+    onSignIn?.(e);
+  };
 
   return (
     <div className="h-[100dvh] flex flex-col md:flex-row font-geist w-[100dvw]">
@@ -74,11 +82,11 @@ export const SignInPage: React.FC<SignInPageProps> = ({
             <h1 className="animate-element animate-delay-100 text-4xl md:text-5xl font-semibold leading-tight">{title}</h1>
             <p className="animate-element animate-delay-200 text-muted-foreground">{description}</p>
 
-            <form className="space-y-5" onSubmit={onSignIn}>
+            <form ref={formRef} className="space-y-5" onSubmit={handleSubmit} method="post" action="#" noValidate>
               <div className="animate-element animate-delay-300">
                 <label className="text-sm font-medium text-muted-foreground">Email Address</label>
                 <GlassInputWrapper>
-                  <input name="email" type="email" placeholder="Enter your email address" className="w-full bg-transparent text-sm p-4 rounded-2xl focus:outline-none" />
+                  <input name="email" type="email" autoComplete="username" placeholder="Enter your email address" className="w-full bg-transparent text-sm p-4 rounded-2xl focus:outline-none" />
                 </GlassInputWrapper>
               </div>
 
@@ -86,7 +94,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                 <label className="text-sm font-medium text-muted-foreground">Password</label>
                 <GlassInputWrapper>
                   <div className="relative">
-                    <input name="password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" className="w-full bg-transparent text-sm p-4 pr-12 rounded-2xl focus:outline-none" />
+                    <input name="password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" placeholder="Enter your password" className="w-full bg-transparent text-sm p-4 pr-12 rounded-2xl focus:outline-none" />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-3 flex items-center">
                       {showPassword ? <EyeOff className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors" /> : <Eye className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors" />}
                     </button>
@@ -102,7 +110,17 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                 {/* <a href="#" onClick={(e) => { e.preventDefault(); onResetPassword?.(); }} className="hover:underline text-violet-400 transition-colors">Reset password</a> */}
               </div>
 
-              <button type="submit" className="animate-element animate-delay-600 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+              <button
+                type="submit"
+                onClick={(e) => {
+                  // 双保险：阻止默认并手动触发提交逻辑
+                  e.preventDefault();
+                  if (formRef.current) {
+                    handleSubmit({ preventDefault: () => {}, currentTarget: formRef.current } as unknown as React.FormEvent<HTMLFormElement>);
+                  }
+                }}
+                className="animate-element animate-delay-600 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
                 Sign In
               </button>
             </form>

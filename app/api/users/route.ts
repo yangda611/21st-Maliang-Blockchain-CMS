@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin, AdminUser } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
+import { Database } from '@/types/database';
 
 // GET 请求 - 获取用户列表（支持搜索和分页）
 export async function GET(request: NextRequest) {
@@ -119,17 +120,19 @@ export async function POST(request: NextRequest) {
     }
 
     // 添加到admin_users表
-    const { error: adminError } = await supabaseAdmin
+    const adminUserData = {
+      id: data.user?.id || '',
+      email: email,
+      role: (role as any) || 'admin',
+      is_active: is_active !== undefined ? is_active : true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    // 使用类型断言来绕过Database类型检查问题
+    const { error: adminError } = await (supabaseAdmin as any)
       .from('admin_users')
-      .insert([{
-        id: data.user?.id,
-        email,
-        password, // 添加密码字段
-        role,
-        is_active,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }]);
+      .insert([adminUserData]);
 
     if (adminError) {
       console.error('添加到admin_users表失败:', adminError);

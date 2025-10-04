@@ -72,6 +72,12 @@ export default function UserManagementPage() {
         }
 
         // 获取用户信息
+        if (!session.user.email) {
+          console.error('用户邮箱不存在');
+          router.push('/maliang-admin');
+          return;
+        }
+
         const { data: userData, error: userError } = await supabase
           .from('admin_users')
           .select('*')
@@ -254,7 +260,7 @@ export default function UserManagementPage() {
       }
 
       // 更新admin_users表
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('admin_users')
         .update({
           email: editUser.email,
@@ -323,7 +329,7 @@ export default function UserManagementPage() {
         throw new Error('Supabase 客户端未初始化');
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('admin_users')
         .update({
           is_active: !isActive,
