@@ -11,6 +11,7 @@ import SolutionSection from '@/components/public/sections/solution';
 import BenefitsSection from '@/components/public/sections/benefits';
 import FinalCTASection from '@/components/public/sections/final-cta';
 import Footer from '@/components/public/footer';
+import { WorldMapDemo } from '@/components/ui/map-demo';
 
 export const metadata: Metadata = {
   title: 'Codexia 区块链CMS - 专业的内容管理系统',
@@ -34,6 +35,7 @@ export default function HomePage() {
         />
         <SolutionSection />
         <BenefitsSection />
+        <WorldMapDemo lang="zh" />
         <FinalCTASection />
       </main>
       <Footer />

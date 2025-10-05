@@ -6,6 +6,7 @@ import SolutionSection from '@/components/public/sections/solution';
 import BenefitsSection from '@/components/public/sections/benefits';
 import FinalCTASection from '@/components/public/sections/final-cta';
 import Footer from '@/components/public/footer';
+import { WorldMapDemo } from '@/components/ui/map-demo';
 import { notFound } from 'next/navigation';
 import { SUPPORTED_LANGUAGES } from '@/middleware';
 
@@ -81,6 +82,7 @@ export default function HomePage({ params }: HomePageProps) {
         />
         <SolutionSection lang={lang} />
         <BenefitsSection lang={lang} />
+        <WorldMapDemo lang={lang} />
         <FinalCTASection lang={lang} />
       </main>
       <Footer lang={lang} />

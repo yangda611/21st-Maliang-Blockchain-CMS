@@ -99,22 +99,22 @@ export default function HeroSection({ lang = 'zh' }: HeroSectionProps) {
     <>
       <section ref={sectionRef} className="relative min-h-screen overflow-hidden">
         <HeroBackground className="h-full w-full">
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-40 sm:pt-48 lg:pt-56 pb-24 lg:pb-32">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-52 sm:pt-60 lg:pt-72 xl:pt-80 pb-28 lg:pb-36">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="space-y-8"
+          className="space-y-10 sm:space-y-12"
         >
           {/* Main Heading - 拆分文字进入 */}
-          <div className="text-4xl sm:text-6xl lg:text-7xl font-bold leading-tight">
+          <div className="text-4xl sm:text-6xl lg:text-7xl font-bold leading-[1.25]">
             <SplitText
               text={currentContent.title}
-              className="block bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent"
+              className="block bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent mb-3 sm:mb-4 lg:mb-5"
             />
             <SplitText
               text={currentContent.subtitle}
-              className="block bg-gradient-to-r from-white/70 via-white/50 to-white/70 bg-clip-text text-transparent"
+              className="block bg-gradient-to-r from-white/70 via-white/50 to-white/70 bg-clip-text text-transparent leading-[1.35] mt-1 sm:mt-2 mb-6 sm:mb-8"
             />
           </div>
 
@@ -123,7 +123,7 @@ export default function HeroSection({ lang = 'zh' }: HeroSectionProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="text-xl sm:text-2xl text-white/60 max-w-3xl mx-auto leading-relaxed"
+            className="text-xl sm:text-2xl text-white/60 max-w-3xl mx-auto leading-[1.85] sm:leading-[1.9]"
           >
             {currentContent.description}
           </motion.p>
