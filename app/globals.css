@@ -108,6 +108,98 @@
 .animate-delay-1200 { animation-delay: 1.2s; }
 .animate-delay-1400 { animation-delay: 1.4s; }
 
+/* 移动端响应式工具类 */
+@layer utilities {
+  /* 超小屏幕隐藏/显示 */
+  .xs\:block {
+    @apply block;
+  }
+  .xs\:hidden {
+    @apply hidden;
+  }
+  .xs\:flex {
+    @apply flex;
+  }
+  .xs\:inline {
+    @apply inline;
+  }
+  .xs\:inline-block {
+    @apply inline-block;
+  }
+
+  /* 自定义断点 */
+  @media (max-width: 375px) {
+    .xs\:block {
+      display: block;
+    }
+    .xs\:hidden {
+      display: none;
+    }
+    .xs\:flex {
+      display: flex;
+    }
+    .xs\:inline {
+      display: inline;
+    }
+    .xs\:inline-block {
+      display: inline-block;
+    }
+  }
+
+  /* 移动端优化 */
+  .mobile-optimized {
+    @apply text-xs px-2 py-1;
+  }
+  
+  .mobile-touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* 防止移动端横向滚动 */
+  .mobile-overflow-hidden {
+    @apply overflow-x-hidden;
+  }
+
+  /* 移动端安全区域 */
+  .mobile-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .mobile-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* 移动端导航栏优化 */
+@media (max-width: 640px) {
+  .mobile-nav {
+    @apply px-3;
+  }
+  
+  .mobile-nav-item {
+    @apply py-2 text-sm;
+  }
+  
+  .mobile-nav-button {
+    @apply p-2;
+  }
+}
+
+/* 超小屏幕优化 */
+@media (max-width: 375px) {
+  .xs-nav {
+    @apply px-2;
+  }
+  
+  .xs-nav-item {
+    @apply py-1.5 text-xs;
+  }
+  
+  .xs-nav-button {
+    @apply p-1.5;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 0%;       /* #000000 纯黑色 */

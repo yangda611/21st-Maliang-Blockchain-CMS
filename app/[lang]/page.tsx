@@ -67,9 +67,9 @@ export default function HomePage({ params }: HomePageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black mobile-overflow-hidden">
       <Navbar lang={lang} />
-      <main>
+      <main className="pt-14 sm:pt-16">
         <HeroSection lang={lang} />
         <PainPointsSection
           lang={lang}

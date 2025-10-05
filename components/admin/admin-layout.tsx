@@ -61,45 +61,46 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-white/10 bg-black/80 backdrop-blur-xl"
+        className="fixed top-0 left-0 right-0 z-50 h-14 sm:h-16 border-b border-white/10 bg-black/80 backdrop-blur-xl"
       >
-        <div className="flex h-full items-center justify-between px-4">
+        <div className="flex h-full items-center justify-between px-3 sm:px-4">
           {/* Left Section */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="hidden lg:flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/10"
+              className="hidden lg:flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/10"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden h-10 w-10 flex items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/10"
+              className="lg:hidden h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/10"
             >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
             </button>
             <Link href="/maliang-admin/dashboard" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-white/20 to-white/5 border border-white/20" />
-              <span className="hidden md:block text-lg font-bold">Maliang CMS</span>
+              <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-gradient-to-br from-white/20 to-white/5 border border-white/20" />
+              <span className="hidden sm:block text-base sm:text-lg font-bold">Maliang CMS</span>
             </Link>
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center gap-2">
-            <button className="h-10 w-10 flex items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/10 relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button className="h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/10 relative">
+              <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 h-2 w-2 rounded-full bg-red-500" />
             </button>
-            <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-white/5">
-              <User className="h-4 w-4" />
-              <span className="text-sm">admin@example.com</span>
+            <div className="hidden sm:flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-white/10 bg-white/5">
+              <User className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-xs sm:text-sm hidden md:inline">admin@example.com</span>
+              <span className="text-xs sm:text-sm md:hidden">Admin</span>
             </div>
             <button
               onClick={handleSignOut}
-              className="h-10 px-4 flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-red-500/20 hover:border-red-500/50"
+              className="h-8 px-2 sm:h-10 sm:px-4 flex items-center gap-1 sm:gap-2 rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-red-500/20 hover:border-red-500/50"
             >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden md:inline">退出</span>
+              <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline text-xs sm:text-sm">退出</span>
             </button>
           </div>
         </div>
@@ -113,11 +114,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             animate={{ x: 0 }}
             exit={{ x: -280 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className={`fixed left-0 top-16 bottom-0 z-40 w-64 border-r border-white/10 bg-black/95 backdrop-blur-xl overflow-y-auto ${
+            className={`fixed left-0 top-14 sm:top-16 bottom-0 z-40 w-64 sm:w-72 border-r border-white/10 bg-black/95 backdrop-blur-xl overflow-y-auto ${
               mobileMenuOpen ? 'block' : 'hidden lg:block'
             }`}
           >
-            <nav className="p-4 space-y-1">
+            <nav className="p-3 sm:p-4 space-y-1">
               {menuItems.map((item, index) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
@@ -132,14 +133,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     <Link
                       href={item.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                      className={`flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg transition-all ${
                         isActive
                           ? 'bg-white/10 border border-white/20 text-white'
                           : 'border border-transparent text-white/60 hover:bg-white/5 hover:text-white'
                       }`}
                     >
-                      <Icon className="h-5 w-5" />
-                      <span className="text-sm font-medium">{item.label}</span>
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm sm:text-base font-medium block truncate">{item.label}</span>
+                        <span className="text-xs text-white/50 hidden sm:block truncate">{item.enLabel}</span>
+                      </div>
                     </Link>
                   </motion.div>
                 );

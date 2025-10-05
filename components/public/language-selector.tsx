@@ -25,11 +25,11 @@ export default function LanguageSelector() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
+        className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
         aria-label="Select language"
       >
-        <Globe className="h-4 w-4 text-white/60" />
-        <span className="text-sm text-white/80">
+        <Globe className="h-3 w-3 sm:h-4 sm:w-4 text-white/60" />
+        <span className="text-xs sm:text-sm text-white/80 hidden xs:block">
           {currentLang?.nativeName || currentLang?.name || currentLanguage}
         </span>
         <ChevronDown className={`h-3 w-3 text-white/60 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -53,26 +53,26 @@ export default function LanguageSelector() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.15 }}
-              className="absolute top-full right-0 mt-2 w-48 bg-black border border-white/20 rounded-lg shadow-lg z-50 overflow-hidden"
+              className="absolute top-full right-0 mt-2 w-40 sm:w-48 bg-black border border-white/20 rounded-lg shadow-lg z-50 overflow-hidden"
             >
               {languages.map((language) => (
                 <button
                   key={language.code}
                   onClick={() => handleLanguageChange(language.code)}
-                  className={`w-full px-4 py-3 text-left flex items-center justify-between hover:bg-white/5 transition-colors ${
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-left flex items-center justify-between hover:bg-white/5 transition-colors ${
                     language.isActive ? 'bg-white/10' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-white">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <span className="text-xs sm:text-sm font-medium text-white">
                       {language.nativeName}
                     </span>
-                    <span className="text-xs text-white/60 uppercase">
+                    <span className="text-xs text-white/60 uppercase hidden sm:block">
                       {language.code}
                     </span>
                   </div>
                   {language.isActive && (
-                    <Check className="h-4 w-4 text-white" />
+                    <Check className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                   )}
                 </button>
               ))}
