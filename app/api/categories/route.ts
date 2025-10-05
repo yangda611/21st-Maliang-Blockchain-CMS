@@ -21,9 +21,7 @@ export async function GET(request: NextRequest) {
       .select(`
         *,
         parent:content_categories!parent_id(*),
-        children:content_categories!parent_id(*),
-        _count(products),
-        _count(articles)
+        children:content_categories!parent_id(*)
       `);
 
     // Apply filters

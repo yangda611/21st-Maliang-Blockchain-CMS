@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, Calendar, User, Tag } from 'lucide-react';
 import ArticleCard from '@/components/public/article-card';
+import { useCategoriesRealtime } from '@/hooks/use-categories-realtime';
 
 interface Article {
   id: string;
@@ -24,6 +25,16 @@ interface Article {
   publishedAt?: string;
 }
 
+interface ContentCategory {
+  id: string;
+  name: { zh: string; en: string; [key: string]: string };
+  description?: { zh: string; en: string; [key: string]: string };
+  slug: string;
+  content_type: string;
+  is_active: boolean;
+  display_order: number;
+}
+
 interface ArticlesListProps {
   lang?: string;
 }
@@ -33,6 +44,9 @@ export default function ArticlesList({ lang = 'zh' }: ArticlesListProps) {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  
+  // Use real-time categories hook
+  const { categories, loading: categoriesLoading } = useCategoriesRealtime('article');
 
   // 多语言内容
   const content = {
@@ -41,13 +55,6 @@ export default function ArticlesList({ lang = 'zh' }: ArticlesListProps) {
       pageDescription: '分享区块链CMS技术的最新见解和最佳实践',
       searchPlaceholder: '搜索文章...',
       allCategories: '所有分类',
-      categories: {
-        '区块链': '区块链',
-        'CMS': 'CMS',
-        '技术': '技术',
-        '多语言': '多语言',
-        '国际化': '国际化',
-      },
       resultsCount: (count: number, search?: string) =>
         `显示 ${count} 篇文章${search ? ` (搜索: "${search}")` : ''}`,
       noResults: '未找到文章',
@@ -59,13 +66,6 @@ export default function ArticlesList({ lang = 'zh' }: ArticlesListProps) {
       pageDescription: 'Sharing the latest insights and best practices in blockchain CMS technology',
       searchPlaceholder: 'Search articles...',
       allCategories: 'All Categories',
-      categories: {
-        '区块链': 'Blockchain',
-        'CMS': 'CMS',
-        '技术': 'Technology',
-        '多语言': 'Multi-language',
-        '国际化': 'Internationalization',
-      },
       resultsCount: (count: number, search?: string) =>
         `Showing ${count} articles${search ? ` (search: "${search}")` : ''}`,
       noResults: 'No articles found',
@@ -77,13 +77,6 @@ export default function ArticlesList({ lang = 'zh' }: ArticlesListProps) {
       pageDescription: 'ブロックチェーンCMS技術の最新の洞察とベストプラクティスを共有',
       searchPlaceholder: '記事を検索...',
       allCategories: 'すべてのカテゴリ',
-      categories: {
-        '区块链': 'ブロックチェーン',
-        'CMS': 'CMS',
-        '技术': '技術',
-        '多语言': '多言語',
-        '国际化': '国際化',
-      },
       resultsCount: (count: number, search?: string) =>
         `${count}件の記事を表示${search ? ` (検索: "${search}")` : ''}`,
       noResults: '記事が見つかりません',
@@ -95,13 +88,6 @@ export default function ArticlesList({ lang = 'zh' }: ArticlesListProps) {
       pageDescription: '블록체인 CMS 기술의 최신 통찰력과 모범 사례 공유',
       searchPlaceholder: '기사 검색...',
       allCategories: '모든 카테고리',
-      categories: {
-        '区块链': '블록체인',
-        'CMS': 'CMS',
-        '技术': '기술',
-        '多语言': '다국어',
-        '国际化': '국제화',
-      },
       resultsCount: (count: number, search?: string) =>
         `${count}개 기사 표시${search ? ` (검색: "${search}")` : ''}`,
       noResults: '기사를 찾을 수 없습니다',
@@ -113,13 +99,6 @@ export default function ArticlesList({ lang = 'zh' }: ArticlesListProps) {
       pageDescription: 'مشاركة أحدث الرؤى وأفضل الممارسات في تقنية CMS البلوكشين',
       searchPlaceholder: 'البحث في المقالات...',
       allCategories: 'جميع الفئات',
-      categories: {
-        '区块链': 'البلوكشين',
-        'CMS': 'CMS',
-        '技术': 'التكنولوجيا',
-        '多语言': 'متعدد اللغات',
-        '国际化': 'التدويل',
-      },
       resultsCount: (count: number, search?: string) =>
         `عرض ${count} مقالة${search ? ` (البحث: "${search}")` : ''}`,
       noResults: 'لم يتم العثور على مقالات',
@@ -131,13 +110,6 @@ export default function ArticlesList({ lang = 'zh' }: ArticlesListProps) {
       pageDescription: 'Compartiendo las últimas perspectivas y mejores prácticas en tecnología CMS blockchain',
       searchPlaceholder: 'Buscar artículos...',
       allCategories: 'Todas las Categorías',
-      categories: {
-        '区块链': 'Blockchain',
-        'CMS': 'CMS',
-        '技术': 'Tecnología',
-        '多语言': 'Multi-idioma',
-        '国际化': 'Internacionalización',
-      },
       resultsCount: (count: number, search?: string) =>
         `Mostrando ${count} artículos${search ? ` (búsqueda: "${search}")` : ''}`,
       noResults: 'No se encontraron artículos',
@@ -155,7 +127,7 @@ export default function ArticlesList({ lang = 'zh' }: ArticlesListProps) {
   const loadArticles = async () => {
     setLoading(true);
     try {
-      // Mock data for now
+      // Mock data for now - in real implementation, this would fetch from API
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const mockArticles: Article[] = [
@@ -170,7 +142,7 @@ export default function ArticlesList({ lang = 'zh' }: ArticlesListProps) {
           featuredImage: '/images/article1.jpg',
           authorId: 'admin1',
           slug: 'blockchain-cms-application',
-          tags: ['区块链', 'CMS', '技术'],
+          tags: ['blockchain', 'cms', 'technology'],
           isPublished: true,
           createdAt: new Date().toISOString(),
           publishedAt: new Date().toISOString(),
@@ -186,7 +158,7 @@ export default function ArticlesList({ lang = 'zh' }: ArticlesListProps) {
           featuredImage: '/images/article2.jpg',
           authorId: 'admin2',
           slug: 'multi-language-cms-challenges',
-          tags: ['多语言', '国际化', 'CMS'],
+          tags: ['multilingual', 'internationalization', 'cms'],
           isPublished: true,
           createdAt: new Date().toISOString(),
           publishedAt: new Date().toISOString(),
@@ -248,25 +220,43 @@ export default function ArticlesList({ lang = 'zh' }: ArticlesListProps) {
               placeholder={currentContent.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-white/20"
+              className="w-full pl-10 pr-4 py-2 bg-black border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/10"
             />
           </div>
 
           {/* Category Filter */}
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-white/60" />
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/20"
-            >
-              <option value="all">{currentContent.allCategories}</option>
-              <option value="区块链">{currentContent.categories['区块链']}</option>
-              <option value="CMS">{currentContent.categories['CMS']}</option>
-              <option value="技术">{currentContent.categories['技术']}</option>
-              <option value="多语言">{currentContent.categories['多语言']}</option>
-              <option value="国际化">{currentContent.categories['国际化']}</option>
-            </select>
+            <div className="relative">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-4 py-2 bg-black border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/10 appearance-none cursor-pointer hover:bg-white/5 transition-colors pr-10"
+                disabled={categoriesLoading}
+              >
+                <option value="all" className="bg-black text-white">
+                  {currentContent.allCategories}
+                </option>
+                {categories.map((category) => (
+                  <option 
+                    key={category.id} 
+                    value={category.slug}
+                    className="bg-black text-white"
+                  >
+                    {category.name?.[lang] || category.name?.zh || category.name?.en || category.slug}
+                  </option>
+                ))}
+              </select>
+              {/* Custom dropdown arrow */}
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="h-4 w-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+            {categoriesLoading && (
+              <div className="h-4 w-4 animate-spin border border-white/20 border-t-white rounded-full" />
+            )}
           </div>
         </div>
       </motion.div>

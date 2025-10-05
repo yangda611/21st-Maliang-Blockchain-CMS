@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useStaticPages } from '@/hooks/use-content';
 import { staticPageService } from '@/lib/services/static-page-service';
 import ContentEditor from './content-editor';
@@ -14,6 +14,13 @@ import type { StaticPage, MultiLanguageText } from '@/types/content';
 import { fadeInUp, staggerContainer } from '@/utils/animations';
 import { Plus, Edit, Trash2, FileText, Globe } from 'lucide-react';
 import { generateSlug } from '@/utils/seo';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 interface PageFormData {
   title: MultiLanguageText;
@@ -153,115 +160,101 @@ export default function StaticPageManager() {
         </button>
       </div>
 
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-            onClick={() => setShowForm(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-4xl bg-black border border-white/20 rounded-xl p-6 max-h-[90vh] overflow-y-auto"
-            >
-              <h2 className="text-2xl font-bold mb-6">
-                {editingId ? '编辑页面' : '新建页面'}
-              </h2>
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              {editingId ? '编辑页面' : '新建页面'}
+            </DialogTitle>
+          </DialogHeader>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <ContentEditor
+              value={formData.title}
+              onChange={handleTitleChange}
+              label="页面标题"
+              required
+            />
+
+            <ContentEditor
+              value={formData.content}
+              onChange={(content) => setFormData({ ...formData, content })}
+              label="页面内容"
+              multiline
+              rows={12}
+              required
+            />
+
+            <div>
+              <label className="block text-sm font-medium text-white/90 mb-2">
+                URL Slug
+              </label>
+              <input
+                type="text"
+                value={formData.slug}
+                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                className="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40"
+                required
+              />
+            </div>
+
+            <div className="border-t border-white/10 pt-6">
+              <h3 className="text-lg font-medium mb-4">SEO 设置</h3>
+              
+              <div className="space-y-4">
                 <ContentEditor
-                  value={formData.title}
-                  onChange={handleTitleChange}
-                  label="页面标题"
-                  required
+                  value={formData.metaTitle || {}}
+                  onChange={(metaTitle) => setFormData({ ...formData, metaTitle })}
+                  label="SEO 标题"
+                  placeholder="页面的 SEO 标题 (建议 50-60 字符)"
                 />
 
                 <ContentEditor
-                  value={formData.content}
-                  onChange={(content) => setFormData({ ...formData, content })}
-                  label="页面内容"
+                  value={formData.metaDescription || {}}
+                  onChange={(metaDescription) => setFormData({ ...formData, metaDescription })}
+                  label="SEO 描述"
                   multiline
-                  rows={12}
-                  required
+                  rows={3}
+                  placeholder="页面的 SEO 描述 (建议 150-160 字符)"
                 />
+              </div>
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-white/90 mb-2">
-                    URL Slug
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
-                    required
-                  />
-                </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isPublished"
+                checked={formData.isPublished}
+                onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
+                className="h-4 w-4 rounded border-white/20 bg-black/50"
+              />
+              <label htmlFor="isPublished" className="text-sm text-white/90">
+                立即发布
+              </label>
+            </div>
 
-                <div className="border-t border-white/10 pt-6">
-                  <h3 className="text-lg font-medium mb-4">SEO 设置</h3>
-                  
-                  <div className="space-y-4">
-                    <ContentEditor
-                      value={formData.metaTitle || {}}
-                      onChange={(metaTitle) => setFormData({ ...formData, metaTitle })}
-                      label="SEO 标题"
-                      placeholder="页面的 SEO 标题 (建议 50-60 字符)"
-                    />
-
-                    <ContentEditor
-                      value={formData.metaDescription || {}}
-                      onChange={(metaDescription) => setFormData({ ...formData, metaDescription })}
-                      label="SEO 描述"
-                      multiline
-                      rows={3}
-                      placeholder="页面的 SEO 描述 (建议 150-160 字符)"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isPublished"
-                    checked={formData.isPublished}
-                    onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                    className="h-4 w-4 rounded border-white/20 bg-black"
-                  />
-                  <label htmlFor="isPublished" className="text-sm text-white/90">
-                    立即发布
-                  </label>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all font-medium"
-                  >
-                    {editingId ? '更新' : '创建'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowForm(false);
-                      setEditingId(null);
-                      resetForm();
-                    }}
-                    className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
-                  >
-                    取消
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <DialogFooter>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                  resetForm();
+                }}
+                className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
+              >
+                取消
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all font-medium"
+              >
+                {editingId ? '更新' : '创建'}
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">

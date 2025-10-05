@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useCategories } from '@/hooks/use-content';
 import { contentCategoryService } from '@/lib/services/content-category-service';
 import ContentEditor from './content-editor';
@@ -14,6 +14,14 @@ import type { ContentCategory, ContentType, MultiLanguageText } from '@/types/co
 import { fadeInUp, staggerContainer } from '@/utils/animations';
 import { Plus, Edit, Trash2, Eye, EyeOff, Folder, ChevronRight } from 'lucide-react';
 import { generateSlug } from '@/utils/seo';
+import { triggerCategoriesUpdate } from '@/hooks/use-categories-realtime';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 interface CategoryFormData {
   name: MultiLanguageText;
@@ -70,6 +78,9 @@ export default function CategoryManager() {
       setEditingId(null);
       resetForm();
       loadCategories();
+      
+      // Trigger real-time update for frontend
+      triggerCategoriesUpdate();
     } catch (error) {
       console.error('Failed to save category:', error);
     }
@@ -96,6 +107,9 @@ export default function CategoryManager() {
     try {
       await contentCategoryService.delete(id);
       loadCategories();
+      
+      // Trigger real-time update for frontend
+      triggerCategoriesUpdate();
     } catch (error) {
       console.error('Failed to delete category:', error);
     }
@@ -105,6 +119,9 @@ export default function CategoryManager() {
     try {
       await contentCategoryService.update(id, { isActive: !isActive });
       loadCategories();
+      
+      // Trigger real-time update for frontend
+      triggerCategoriesUpdate();
     } catch (error) {
       console.error('Failed to toggle category status:', error);
     }
@@ -151,124 +168,110 @@ export default function CategoryManager() {
         </button>
       </div>
 
-      {/* Form Modal */}
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-            onClick={() => setShowForm(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-2xl bg-black border border-white/20 rounded-xl p-6 max-h-[90vh] overflow-y-auto"
-            >
-              <h2 className="text-2xl font-bold mb-6">
-                {editingId ? '编辑分类' : '新建分类'}
-              </h2>
+      {/* Form Dialog */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              {editingId ? '编辑分类' : '新建分类'}
+            </DialogTitle>
+          </DialogHeader>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <ContentEditor
-                  value={formData.name}
-                  onChange={handleNameChange}
-                  label="分类名称"
-                  required
-                />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <ContentEditor
+              value={formData.name}
+              onChange={handleNameChange}
+              label="分类名称"
+              required
+            />
 
-                <ContentEditor
-                  value={formData.description || {}}
-                  onChange={(description) => setFormData({ ...formData, description })}
-                  label="分类描述"
-                  multiline
-                  rows={3}
-                />
+            <ContentEditor
+              value={formData.description || {}}
+              onChange={(description) => setFormData({ ...formData, description })}
+              label="分类描述"
+              multiline
+              rows={3}
+            />
 
-                <div>
-                  <label className="block text-sm font-medium text-white/90 mb-2">
-                    URL Slug
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
-                    required
-                  />
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-white/90 mb-2">
+                URL Slug
+              </label>
+              <input
+                type="text"
+                value={formData.slug}
+                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                className="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40"
+                required
+              />
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-white/90 mb-2">
-                    内容类型
-                  </label>
-                  <select
-                    value={formData.contentType}
-                    onChange={(e) =>
-                      setFormData({ ...formData, contentType: e.target.value as ContentType })
-                    }
-                    className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
-                  >
-                    <option value="product">产品</option>
-                    <option value="article">文章</option>
-                    <option value="page">页面</option>
-                  </select>
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-white/90 mb-2">
+                内容类型
+              </label>
+              <select
+                value={formData.contentType}
+                onChange={(e) =>
+                  setFormData({ ...formData, contentType: e.target.value as ContentType })
+                }
+                className="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40"
+              >
+                <option value="product">产品</option>
+                <option value="article">文章</option>
+                <option value="page">页面</option>
+              </select>
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-white/90 mb-2">
-                    显示顺序
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.displayOrder}
-                    onChange={(e) =>
-                      setFormData({ ...formData, displayOrder: parseInt(e.target.value) })
-                    }
-                    className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
-                  />
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-white/90 mb-2">
+                显示顺序
+              </label>
+              <input
+                type="number"
+                value={formData.displayOrder}
+                onChange={(e) =>
+                  setFormData({ ...formData, displayOrder: parseInt(e.target.value) })
+                }
+                className="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40"
+              />
+            </div>
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="h-4 w-4 rounded border-white/20 bg-black"
-                  />
-                  <label htmlFor="isActive" className="text-sm text-white/90">
-                    启用此分类
-                  </label>
-                </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isActive"
+                checked={formData.isActive}
+                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                className="h-4 w-4 rounded border-white/20 bg-black/50"
+              />
+              <label htmlFor="isActive" className="text-sm text-white/90">
+                启用此分类
+              </label>
+            </div>
 
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all font-medium"
-                  >
-                    {editingId ? '更新' : '创建'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowForm(false);
-                      setEditingId(null);
-                      resetForm();
-                    }}
-                    className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
-                  >
-                    取消
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <DialogFooter>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                  resetForm();
+                }}
+                className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
+              >
+                取消
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all font-medium"
+              >
+                {editingId ? '更新' : '创建'}
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Categories List */}
       {loading ? (

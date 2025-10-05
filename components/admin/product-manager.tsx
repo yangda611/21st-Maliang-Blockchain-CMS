@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useProducts, useCategories } from '@/hooks/use-content';
 import { productService } from '@/lib/services/product-service';
 import ContentEditor from './content-editor';
@@ -24,6 +24,13 @@ import {
   DollarSign,
 } from 'lucide-react';
 import { generateSlug } from '@/utils/seo';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 interface ProductFormData {
   categoryId: string;
@@ -186,178 +193,164 @@ export default function ProductManager() {
         </button>
       </div>
 
-      {/* Form Modal */}
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-            onClick={() => setShowForm(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-4xl bg-black border border-white/20 rounded-xl p-6 max-h-[90vh] overflow-y-auto"
-            >
-              <h2 className="text-2xl font-bold mb-6">
-                {editingId ? '编辑产品' : '新建产品'}
-              </h2>
+      {/* Form Dialog */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              {editingId ? '编辑产品' : '新建产品'}
+            </DialogTitle>
+          </DialogHeader>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-white/90 mb-2">
-                    产品分类 <span className="text-red-400">*</span>
-                  </label>
-                  <select
-                    value={formData.categoryId}
-                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                    className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
-                    required
-                  >
-                    <option value="">选择分类</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name.zh || cat.name.en}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-white/90 mb-2">
+                产品分类 <span className="text-red-400">*</span>
+              </label>
+              <select
+                value={formData.categoryId}
+                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                className="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40"
+                required
+              >
+                <option value="">选择分类</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name.zh || cat.name.en}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                <ContentEditor
-                  value={formData.name}
-                  onChange={handleNameChange}
-                  label="产品名称"
-                  required
+            <ContentEditor
+              value={formData.name}
+              onChange={handleNameChange}
+              label="产品名称"
+              required
+            />
+
+            <ContentEditor
+              value={formData.description}
+              onChange={(description) => setFormData({ ...formData, description })}
+              label="产品描述"
+              multiline
+              rows={4}
+              required
+            />
+
+            <ContentEditor
+              value={formData.specifications || {}}
+              onChange={(specifications) => setFormData({ ...formData, specifications })}
+              label="产品规格"
+              multiline
+              rows={3}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  价格
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.pricing?.amount || 0}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      pricing: { ...formData.pricing!, amount: parseFloat(e.target.value) },
+                    })
+                  }
+                  className="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  货币
+                </label>
+                <select
+                  value={formData.pricing?.currency || 'CNY'}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      pricing: { ...formData.pricing!, currency: e.target.value },
+                    })
+                  }
+                  className="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40"
+                >
+                  <option value="CNY">CNY (¥)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                </select>
+              </div>
+            </div>
 
-                <ContentEditor
-                  value={formData.description}
-                  onChange={(description) => setFormData({ ...formData, description })}
-                  label="产品描述"
-                  multiline
-                  rows={4}
-                  required
-                />
+            <div>
+              <label className="block text-sm font-medium text-white/90 mb-2">
+                URL Slug
+              </label>
+              <input
+                type="text"
+                value={formData.slug}
+                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                className="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40"
+                required
+              />
+            </div>
 
-                <ContentEditor
-                  value={formData.specifications || {}}
-                  onChange={(specifications) => setFormData({ ...formData, specifications })}
-                  label="产品规格"
-                  multiline
-                  rows={3}
-                />
+            <div>
+              <label className="block text-sm font-medium text-white/90 mb-2">
+                标签 (逗号分隔)
+              </label>
+              <input
+                type="text"
+                value={formData.tags.join(', ')}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean),
+                  })
+                }
+                placeholder="例如: 新品, 热销, 推荐"
+                className="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40"
+              />
+            </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-white/90 mb-2">
-                      价格
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={formData.pricing?.amount || 0}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          pricing: { ...formData.pricing!, amount: parseFloat(e.target.value) },
-                        })
-                      }
-                      className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-white/90 mb-2">
-                      货币
-                    </label>
-                    <select
-                      value={formData.pricing?.currency || 'CNY'}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          pricing: { ...formData.pricing!, currency: e.target.value },
-                        })
-                      }
-                      className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
-                    >
-                      <option value="CNY">CNY (¥)</option>
-                      <option value="USD">USD ($)</option>
-                      <option value="EUR">EUR (€)</option>
-                    </select>
-                  </div>
-                </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isPublished"
+                checked={formData.isPublished}
+                onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
+                className="h-4 w-4 rounded border-white/20 bg-black/50"
+              />
+              <label htmlFor="isPublished" className="text-sm text-white/90">
+                立即发布
+              </label>
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-white/90 mb-2">
-                    URL Slug
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-white/90 mb-2">
-                    标签 (逗号分隔)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.tags.join(', ')}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean),
-                      })
-                    }
-                    placeholder="例如: 新品, 热销, 推荐"
-                    className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isPublished"
-                    checked={formData.isPublished}
-                    onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                    className="h-4 w-4 rounded border-white/20 bg-black"
-                  />
-                  <label htmlFor="isPublished" className="text-sm text-white/90">
-                    立即发布
-                  </label>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all font-medium"
-                  >
-                    {editingId ? '更新' : '创建'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowForm(false);
-                      setEditingId(null);
-                      resetForm();
-                    }}
-                    className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
-                  >
-                    取消
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <DialogFooter>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                  resetForm();
+                }}
+                className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
+              >
+                取消
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all font-medium"
+              >
+                {editingId ? '更新' : '创建'}
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Products Grid */}
       {loading ? (

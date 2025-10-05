@@ -6,13 +6,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useJobPostings } from '@/hooks/use-content';
 import { jobPostingService } from '@/lib/services/job-posting-service';
 import ContentEditor from './content-editor';
 import type { JobPosting, MultiLanguageText } from '@/types/content';
 import { fadeInUp, staggerContainer } from '@/utils/animations';
 import { Plus, Edit, Trash2, Briefcase, MapPin, Clock, CheckCircle, XCircle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 interface JobFormData {
   title: MultiLanguageText;
@@ -149,125 +156,111 @@ export default function JobPostingManager() {
         </button>
       </div>
 
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-            onClick={() => setShowForm(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-4xl bg-black border border-white/20 rounded-xl p-6 max-h-[90vh] overflow-y-auto"
-            >
-              <h2 className="text-2xl font-bold mb-6">
-                {editingId ? '编辑职位' : '发布职位'}
-              </h2>
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              {editingId ? '编辑职位' : '发布职位'}
+            </DialogTitle>
+          </DialogHeader>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <ContentEditor
-                  value={formData.title}
-                  onChange={(title) => setFormData({ ...formData, title })}
-                  label="职位名称"
-                  required
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <ContentEditor
+              value={formData.title}
+              onChange={(title) => setFormData({ ...formData, title })}
+              label="职位名称"
+              required
+            />
+
+            <ContentEditor
+              value={formData.description}
+              onChange={(description) => setFormData({ ...formData, description })}
+              label="职位描述"
+              multiline
+              rows={6}
+              required
+            />
+
+            <ContentEditor
+              value={formData.requirements}
+              onChange={(requirements) => setFormData({ ...formData, requirements })}
+              label="任职要求"
+              multiline
+              rows={6}
+              required
+            />
+
+            <ContentEditor
+              value={formData.location || {}}
+              onChange={(location) => setFormData({ ...formData, location })}
+              label="工作地点"
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  工作类型
+                </label>
+                <select
+                  value={formData.employmentType}
+                  onChange={(e) => setFormData({ ...formData, employmentType: e.target.value })}
+                  className="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40"
+                >
+                  <option value="full-time">全职</option>
+                  <option value="part-time">兼职</option>
+                  <option value="contract">合同</option>
+                  <option value="internship">实习</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  申请截止日期
+                </label>
+                <input
+                  type="date"
+                  value={formData.applicationDeadline}
+                  onChange={(e) => setFormData({ ...formData, applicationDeadline: e.target.value })}
+                  className="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40"
                 />
+              </div>
+            </div>
 
-                <ContentEditor
-                  value={formData.description}
-                  onChange={(description) => setFormData({ ...formData, description })}
-                  label="职位描述"
-                  multiline
-                  rows={6}
-                  required
-                />
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isActive"
+                checked={formData.isActive}
+                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                className="h-4 w-4 rounded border-white/20 bg-black/50"
+              />
+              <label htmlFor="isActive" className="text-sm text-white/90">
+                立即发布
+              </label>
+            </div>
 
-                <ContentEditor
-                  value={formData.requirements}
-                  onChange={(requirements) => setFormData({ ...formData, requirements })}
-                  label="任职要求"
-                  multiline
-                  rows={6}
-                  required
-                />
-
-                <ContentEditor
-                  value={formData.location || {}}
-                  onChange={(location) => setFormData({ ...formData, location })}
-                  label="工作地点"
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-white/90 mb-2">
-                      工作类型
-                    </label>
-                    <select
-                      value={formData.employmentType}
-                      onChange={(e) => setFormData({ ...formData, employmentType: e.target.value })}
-                      className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
-                    >
-                      <option value="full-time">全职</option>
-                      <option value="part-time">兼职</option>
-                      <option value="contract">合同</option>
-                      <option value="internship">实习</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-white/90 mb-2">
-                      申请截止日期
-                    </label>
-                    <input
-                      type="date"
-                      value={formData.applicationDeadline}
-                      onChange={(e) => setFormData({ ...formData, applicationDeadline: e.target.value })}
-                      className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="h-4 w-4 rounded border-white/20 bg-black"
-                  />
-                  <label htmlFor="isActive" className="text-sm text-white/90">
-                    立即发布
-                  </label>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all font-medium"
-                  >
-                    {editingId ? '更新' : '发布'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowForm(false);
-                      setEditingId(null);
-                      resetForm();
-                    }}
-                    className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
-                  >
-                    取消
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <DialogFooter>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                  resetForm();
+                }}
+                className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
+              >
+                取消
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all font-medium"
+              >
+                {editingId ? '更新' : '发布'}
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
