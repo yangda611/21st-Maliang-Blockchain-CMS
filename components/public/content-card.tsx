@@ -7,7 +7,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useTranslation } from '@/hooks/use-language';
+import { useContentTranslation } from '@/hooks/use-language';
 import { cardHover } from '@/utils/animations';
 import { Calendar, Tag, ArrowRight } from 'lucide-react';
 import type { MultiLanguageText } from '@/types/content';
@@ -31,7 +31,7 @@ export default function ContentCard({
   date,
   type = 'default',
 }: ContentCardProps) {
-  const { t } = useTranslation();
+  const { t } = useContentTranslation();
 
   return (
     <Link href={href}>

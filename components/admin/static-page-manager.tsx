@@ -37,6 +37,7 @@ export default function StaticPageManager() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState<PageFormData>({
     title: {},
@@ -65,6 +66,7 @@ export default function StaticPageManager() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       if (editingId) {
@@ -79,6 +81,19 @@ export default function StaticPageManager() {
       loadPages();
     } catch (error) {
       console.error('Failed to save page:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    // 只有在非提交状态下才允许关闭弹窗
+    if (!open && !isSubmitting) {
+      setShowForm(false);
+      setEditingId(null);
+      resetForm();
+    } else if (open && !isSubmitting) {
+      setShowForm(true);
     }
   };
 
@@ -160,8 +175,8 @@ export default function StaticPageManager() {
         </button>
       </div>
 
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={showForm} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" preventOutsideClose={true}>
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">
               {editingId ? '编辑页面' : '新建页面'}
@@ -237,19 +252,23 @@ export default function StaticPageManager() {
               <button
                 type="button"
                 onClick={() => {
-                  setShowForm(false);
-                  setEditingId(null);
-                  resetForm();
+                  if (!isSubmitting) {
+                    setShowForm(false);
+                    setEditingId(null);
+                    resetForm();
+                  }
                 }}
-                className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 取消
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all font-medium"
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {editingId ? '更新' : '创建'}
+                {isSubmitting ? '提交中...' : (editingId ? '更新' : '创建')}
               </button>
             </DialogFooter>
           </form>

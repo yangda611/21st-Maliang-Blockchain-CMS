@@ -127,47 +127,22 @@ export default function ArticlesList({ lang = 'zh' }: ArticlesListProps) {
   const loadArticles = async () => {
     setLoading(true);
     try {
-      // Mock data for now - in real implementation, this would fetch from API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const mockArticles: Article[] = [
-        {
-          id: '1',
-          title: { zh: '区块链技术在CMS中的应用', en: 'Blockchain Technology in CMS Applications' },
-          excerpt: {
-            zh: '探索区块链技术如何革新内容管理系统，提高内容的安全性和透明度。',
-            en: 'Explore how blockchain technology revolutionizes content management systems.'
-          },
-          content: { zh: '详细内容...', en: 'Detailed content...' },
-          featuredImage: '/images/article1.jpg',
-          authorId: 'admin1',
-          slug: 'blockchain-cms-application',
-          tags: ['blockchain', 'cms', 'technology'],
-          isPublished: true,
-          createdAt: new Date().toISOString(),
-          publishedAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          title: { zh: '多语言内容管理的挑战与解决方案', en: 'Challenges and Solutions in Multi-language Content Management' },
-          excerpt: {
-            zh: '讨论多语言内容管理中的常见挑战，并提供实用的解决方案。',
-            en: 'Discuss common challenges in multi-language content management.'
-          },
-          content: { zh: '详细内容...', en: 'Detailed content...' },
-          featuredImage: '/images/article2.jpg',
-          authorId: 'admin2',
-          slug: 'multi-language-cms-challenges',
-          tags: ['multilingual', 'internationalization', 'cms'],
-          isPublished: true,
-          createdAt: new Date().toISOString(),
-          publishedAt: new Date().toISOString(),
-        },
-      ];
-
-      setArticles(mockArticles);
+      const response = await fetch('/api/articles?published=true&limit=20');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch articles');
+      }
+      
+      const data = await response.json();
+      
+      if (data.articles && Array.isArray(data.articles)) {
+        setArticles(data.articles);
+      } else {
+        setArticles([]);
+      }
     } catch (error) {
       console.error('Failed to load articles:', error);
+      setArticles([]);
     } finally {
       setLoading(false);
     }

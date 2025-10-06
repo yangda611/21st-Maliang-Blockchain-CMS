@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { LanguageProvider } from '@/hooks/use-language'
+import { TranslationProvider } from '@/components/translation-provider'
 import { SUPPORTED_LANGUAGES } from '@/middleware'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -26,12 +27,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LanguageProvider
-            isAdmin={false}
-            initialLanguage="zh"
-          >
-            {children}
-          </LanguageProvider>
+          <TranslationProvider>
+            <LanguageProvider
+              isAdmin={false}
+              initialLanguage="zh"
+            >
+              {children}
+            </LanguageProvider>
+          </TranslationProvider>
         </ThemeProvider>
       </body>
     </html>

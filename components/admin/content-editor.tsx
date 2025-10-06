@@ -5,12 +5,17 @@
 
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/hooks/use-language';
+import { useTranslation, type ContentType } from '@/hooks/use-translation';
 import type { SupportedLanguage, MultiLanguageText } from '@/types/content';
 import { fadeInUp } from '@/utils/animations';
 import { Globe, Check } from 'lucide-react';
+import { TranslationButton, BatchTranslationButton } from '@/components/ui/translation-button';
+import { TranslationProgress } from '@/components/ui/translation-progress';
+import { TranslationCacheManager } from '@/components/admin/translation-cache-manager';
 
 interface ContentEditorProps {
   value: MultiLanguageText;
@@ -37,6 +42,40 @@ export default function ContentEditor({
   const [activeLanguage, setActiveLanguage] = useState<SupportedLanguage>('zh');
   // 编辑模式：plain=纯文本、markdown=Markdown编辑+预览、html=HTML文件导入
   const [mode, setMode] = useState<'plain' | 'markdown' | 'html'>('plain');
+  const [showCacheManager, setShowCacheManager] = useState(false);
+  
+  // 使用翻译 Hook
+  const {
+    isTranslating,
+    translatingLanguages,
+    translationProgress,
+    translationError,
+    translateToLanguage,
+    translateToAll,
+    clearError
+  } = useTranslation({
+    onSuccess: (translations) => {
+      // 批量更新所有翻译结果，避免状态覆盖问题
+      const newTranslations: Partial<MultiLanguageText> = {};
+      
+      Object.entries(translations).forEach(([lang, text]) => {
+        if (text && text.trim()) {
+          newTranslations[lang as SupportedLanguage] = text;
+        }
+      });
+      
+      // 一次性更新所有翻译结果
+      if (Object.keys(newTranslations).length > 0) {
+        onChange({
+          ...value,
+          ...newTranslations
+        });
+      }
+    },
+    onError: (error) => {
+      console.error('Translation error:', error);
+    }
+  });
 
   const handleChange = useCallback(
     (lang: SupportedLanguage, text: string) => {
@@ -89,6 +128,53 @@ export default function ContentEditor({
     return renderMarkdown(value?.[activeLanguage] || '');
   }, [mode, value, activeLanguage, renderMarkdown]);
 
+  // 单个语言翻译处理
+  const handleTranslateSingle = useCallback(async (
+    sourceLanguage: SupportedLanguage,
+    targetLanguage: SupportedLanguage
+  ) => {
+    const sourceText = value?.[sourceLanguage];
+    if (!sourceText?.trim()) {
+      return;
+    }
+
+    await translateToLanguage(sourceLanguage, targetLanguage, sourceText, mode as ContentType);
+  }, [value, translateToLanguage, mode]);
+
+  // 批量翻译处理
+  const handleTranslateAll = useCallback(async (sourceLanguage: SupportedLanguage) => {
+    const sourceText = value?.[sourceLanguage];
+    if (!sourceText?.trim()) {
+      return;
+    }
+
+    const incompleteLanguages = supportedLanguages.filter(
+      lang => lang !== sourceLanguage && !getCompletionStatus(lang)
+    );
+    
+    if (incompleteLanguages.length === 0) {
+      return;
+    }
+
+    await translateToAll(sourceLanguage, sourceText, mode as ContentType, incompleteLanguages);
+  }, [value, supportedLanguages, getCompletionStatus, translateToAll, mode]);
+
+  // 获取翻译状态
+  const getTranslationStatus = useCallback((lang: SupportedLanguage) => {
+    if (translatingLanguages.has(lang)) return 'translating';
+    if (getCompletionStatus(lang)) return 'completed';
+    return 'pending';
+  }, [translatingLanguages, getCompletionStatus]);
+
+  // 获取翻译进度状态
+  const translationStatus = useMemo(() => {
+    const status: Record<string, 'pending' | 'translating' | 'completed' | 'error'> = {};
+    supportedLanguages.forEach(lang => {
+      status[lang] = getTranslationStatus(lang);
+    });
+    return status;
+  }, [supportedLanguages, getTranslationStatus]);
+
   return (
     <motion.div variants={fadeInUp} className="space-y-3">
       {label && (
@@ -99,31 +185,97 @@ export default function ContentEditor({
       )}
 
       {showLanguageTabs && (
-        <div className="flex flex-wrap gap-2">
-          {supportedLanguages.map((lang) => {
-            const isActive = activeLanguage === lang;
-            const isCompleted = getCompletionStatus(lang);
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {supportedLanguages.map((lang) => {
+              const isActive = activeLanguage === lang;
+              const isCompleted = getCompletionStatus(lang);
+              const hasContent = value?.[lang] && value[lang].trim().length > 0;
 
-            return (
-              <button
-                key={lang}
-                onClick={() => setActiveLanguage(lang)}
-                className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  isActive
-                    ? 'bg-white/10 text-white border border-white/20'
-                    : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <Globe className="h-4 w-4" />
-                  {lang.toUpperCase()}
-                  {isCompleted && (
-                    <Check className="h-3 w-3 text-green-400" />
+              return (
+                <div key={lang} className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveLanguage(lang)}
+                    className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-white/10 text-white border border-white/20'
+                        : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Globe className="h-4 w-4" />
+                      {lang.toUpperCase()}
+                      {isCompleted && (
+                        <Check className="h-3 w-3 text-green-400" />
+                      )}
+                    </span>
+                  </button>
+                  
+                  {/* 翻译按钮 */}
+                  {lang !== activeLanguage && hasContent && !isCompleted && (
+                    <TranslationButton
+                      sourceLanguage={activeLanguage}
+                      targetLanguage={lang}
+                      sourceText={value?.[activeLanguage] || ''}
+                      contentType={mode as ContentType}
+                      isTranslating={translatingLanguages.has(lang)}
+                      isCompleted={isCompleted || false}
+                      progress={translationProgress[lang] || 0}
+                      onTranslate={() => handleTranslateSingle(activeLanguage, lang)}
+                      size="sm"
+                      variant="minimal"
+                      showProgress={true}
+                    />
                   )}
-                </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 批量翻译按钮 */}
+          {value?.[activeLanguage] && value[activeLanguage].trim().length > 0 && (
+            <div className="flex items-center gap-2">
+              <BatchTranslationButton
+                sourceLanguage={activeLanguage}
+                sourceText={value[activeLanguage]}
+                contentType={mode as ContentType}
+                targetLanguages={supportedLanguages.filter(
+                  lang => lang !== activeLanguage && !getCompletionStatus(lang)
+                )}
+                isTranslating={isTranslating}
+                progress={Math.round(Object.values(translationProgress).reduce((a, b) => a + b, 0) / Math.max(1, Object.keys(translationProgress).length))}
+                onTranslate={() => handleTranslateAll(activeLanguage)}
+                size="sm"
+              />
+            </div>
+          )}
+
+          {/* 翻译进度显示 */}
+          {isTranslating && (
+            <TranslationProgress
+              languages={supportedLanguages}
+              progress={translationProgress}
+              status={translationStatus}
+              variant="compact"
+              showLabels={false}
+              showPercentages={false}
+            />
+          )}
+
+          {/* 翻译错误提示 */}
+          {translationError && (
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center justify-between">
+              <span>{translationError}</span>
+              <button
+                type="button"
+                onClick={clearError}
+                className="text-white/60 hover:text-white transition-colors"
+              >
+                ✕
               </button>
-            );
-          })}
+            </div>
+          )}
         </div>
       )}
 
@@ -131,14 +283,17 @@ export default function ContentEditor({
       <div className="flex items-center gap-2 text-sm">
         <span className="text-white/60">编辑模式:</span>
         <button
+          type="button"
           onClick={() => setMode('plain')}
           className={`px-3 py-1.5 rounded border ${mode==='plain'?'bg-white/10 border-white/30':'bg-white/5 border-white/10 hover:bg-white/10'} transition-all`}
         >纯文本</button>
         <button
+          type="button"
           onClick={() => setMode('markdown')}
           className={`px-3 py-1.5 rounded border ${mode==='markdown'?'bg-white/10 border-white/30':'bg-white/5 border-white/10 hover:bg-white/10'} transition-all`}
         >Markdown</button>
         <button
+          type="button"
           onClick={() => setMode('html')}
           className={`px-3 py-1.5 rounded border ${mode==='html'?'bg-white/10 border-white/30':'bg-white/5 border-white/10 hover:bg-white/10'} transition-all`}
         >HTML导入</button>
@@ -227,21 +382,40 @@ export default function ContentEditor({
       </div>
 
       {/* Translation status indicator */}
-      <div className="flex items-center gap-2 text-xs text-white/60">
-        <span>翻译进度:</span>
-        {supportedLanguages.map((lang) => (
-          <span
-            key={lang}
-            className={`px-2 py-1 rounded ${
-              getCompletionStatus(lang)
-                ? 'bg-green-500/20 text-green-400'
-                : 'bg-white/5 text-white/40'
-            }`}
-          >
-            {lang.toUpperCase()}
-          </span>
-        ))}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-xs text-white/60">
+          <span>翻译进度:</span>
+          {supportedLanguages.map((lang) => (
+            <span
+              key={lang}
+              className={`px-2 py-1 rounded ${
+                getCompletionStatus(lang)
+                  ? 'bg-green-500/20 text-green-400'
+                  : 'bg-white/5 text-white/40'
+              }`}
+            >
+              {lang.toUpperCase()}
+            </span>
+          ))}
+        </div>
+        
+        {/* 缓存管理按钮 */}
+        <button
+          type="button"
+          onClick={() => setShowCacheManager(true)}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white text-xs transition-all"
+          title="翻译缓存管理"
+        >
+          <Settings className="h-3 w-3" />
+          缓存管理
+        </button>
       </div>
+
+      {/* 缓存管理器 */}
+      <TranslationCacheManager
+        show={showCacheManager}
+        onClose={() => setShowCacheManager(false)}
+      />
     </motion.div>
   );
 }

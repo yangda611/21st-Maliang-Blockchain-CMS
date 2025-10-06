@@ -151,10 +151,10 @@ export function useLanguage() {
 }
 
 /**
- * useTranslation Hook
+ * useContentTranslation Hook
  * Simplified hook for getting translated content
  */
-export function useTranslation() {
+export function useContentTranslation() {
   const { currentLanguage, getContent } = useLanguage();
 
   const t = useCallback(
@@ -234,8 +234,14 @@ export function useLanguageSwitcher() {
         // Add new language prefix
         const newPath = segments.length > 0 ? `/${lang}/${segments.join('/')}` : `/${lang}`;
 
-        // Use window.location for proper navigation
-        window.location.href = newPath;
+        // Check if we're in admin panel - if so, don't reload the page
+        if (currentPath.includes('/maliang-admin') || currentPath.includes('/admin')) {
+          // Update URL without page reload using history API
+          window.history.pushState({}, '', newPath);
+        } else {
+          // Use window.location for proper navigation on frontend
+          window.location.href = newPath;
+        }
       }
     },
     [setLanguage]

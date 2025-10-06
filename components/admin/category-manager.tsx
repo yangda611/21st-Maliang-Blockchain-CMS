@@ -7,8 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useCategories } from '@/hooks/use-content';
-import { contentCategoryService } from '@/lib/services/content-category-service';
+import { adminCategoryService } from '@/lib/services/admin-category-service';
 import ContentEditor from './content-editor';
 import type { ContentCategory, ContentType, MultiLanguageText } from '@/types/content';
 import { fadeInUp, staggerContainer } from '@/utils/animations';
@@ -39,6 +38,7 @@ export default function CategoryManager() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<CategoryFormData>({
     name: {},
     description: {},
@@ -49,40 +49,57 @@ export default function CategoryManager() {
     isActive: true,
   });
 
-  const { getList } = useCategories();
-
   useEffect(() => {
     loadCategories();
   }, []);
 
   const loadCategories = async () => {
     setLoading(true);
-    const result = await getList(1, 100);
+    const result = await adminCategoryService.getAll();
     if (result.success && result.data) {
-      setCategories(result.data.data);
+      setCategories(result.data);
     }
     setLoading(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     try {
+      let result;
       if (editingId) {
-        await contentCategoryService.update(editingId, formData);
+        result = await adminCategoryService.update(editingId, formData);
       } else {
-        await contentCategoryService.create(formData);
+        result = await adminCategoryService.create(formData);
       }
 
+      if (result.success) {
+        setShowForm(false);
+        setEditingId(null);
+        resetForm();
+        loadCategories();
+        
+        // Trigger real-time update for frontend
+        triggerCategoriesUpdate();
+      } else {
+        console.error('Failed to save category:', result.error?.message);
+      }
+    } catch (error) {
+      console.error('Failed to save category:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    // 只有在非提交状态下才允许关闭弹窗
+    if (!open && !isSubmitting) {
       setShowForm(false);
       setEditingId(null);
       resetForm();
-      loadCategories();
-      
-      // Trigger real-time update for frontend
-      triggerCategoriesUpdate();
-    } catch (error) {
-      console.error('Failed to save category:', error);
+    } else if (open && !isSubmitting) {
+      setShowForm(true);
     }
   };
 
@@ -105,11 +122,15 @@ export default function CategoryManager() {
     if (!confirm('确定要删除此分类吗？')) return;
 
     try {
-      await contentCategoryService.delete(id);
-      loadCategories();
-      
-      // Trigger real-time update for frontend
-      triggerCategoriesUpdate();
+      const result = await adminCategoryService.delete(id);
+      if (result.success) {
+        loadCategories();
+        
+        // Trigger real-time update for frontend
+        triggerCategoriesUpdate();
+      } else {
+        console.error('Failed to delete category:', result.error?.message);
+      }
     } catch (error) {
       console.error('Failed to delete category:', error);
     }
@@ -117,11 +138,15 @@ export default function CategoryManager() {
 
   const handleToggleActive = async (id: string, isActive: boolean) => {
     try {
-      await contentCategoryService.update(id, { isActive: !isActive });
-      loadCategories();
-      
-      // Trigger real-time update for frontend
-      triggerCategoriesUpdate();
+      const result = await adminCategoryService.toggleActive(id, isActive);
+      if (result.success) {
+        loadCategories();
+        
+        // Trigger real-time update for frontend
+        triggerCategoriesUpdate();
+      } else {
+        console.error('Failed to toggle category status:', result.error?.message);
+      }
     } catch (error) {
       console.error('Failed to toggle category status:', error);
     }
@@ -169,8 +194,8 @@ export default function CategoryManager() {
       </div>
 
       {/* Form Dialog */}
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={showForm} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" preventOutsideClose={true}>
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">
               {editingId ? '编辑分类' : '新建分类'}
@@ -254,19 +279,23 @@ export default function CategoryManager() {
               <button
                 type="button"
                 onClick={() => {
-                  setShowForm(false);
-                  setEditingId(null);
-                  resetForm();
+                  if (!isSubmitting) {
+                    setShowForm(false);
+                    setEditingId(null);
+                    resetForm();
+                  }
                 }}
-                className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 取消
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all font-medium"
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {editingId ? '更新' : '创建'}
+                {isSubmitting ? '提交中...' : (editingId ? '更新' : '创建')}
               </button>
             </DialogFooter>
           </form>

@@ -8,7 +8,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { useTranslation } from '@/hooks/use-language';
+import { useContentTranslation } from '@/hooks/use-language';
 import { contentCategoryService } from '@/lib/services/content-category-service';
 import type { ContentCategory } from '@/types/content';
 import { ChevronRight, ChevronDown } from 'lucide-react';
@@ -25,7 +25,7 @@ export default function CategoryNavigation({
 }: CategoryNavigationProps) {
   const [categories, setCategories] = useState<ContentCategory[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const { t } = useTranslation();
+  const { t } = useContentTranslation();
 
   useEffect(() => {
     loadCategories();
