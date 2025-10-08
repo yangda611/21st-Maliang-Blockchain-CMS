@@ -7,6 +7,7 @@ import BenefitsSection from '@/components/public/sections/benefits';
 import FinalCTASection from '@/components/public/sections/final-cta';
 import Footer from '@/components/public/footer';
 import { WorldMapDemo } from '@/components/ui/map-demo';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 import { notFound } from 'next/navigation';
 import { SUPPORTED_LANGUAGES } from '@/middleware';
 

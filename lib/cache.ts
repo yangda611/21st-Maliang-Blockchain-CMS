@@ -1,54 +1,271 @@
 /**
- * Caching Strategies for Maliang CMS
- * Implements various caching layers for optimal performance
+ * 智能缓存系统
+ * 提供多层缓存策略，优化性能
  */
 
-// Memory cache implementation
-class MemoryCache {
-  private cache = new Map<string, { value: any; expiry: number; tags?: string[] }>();
-  private maxSize = 1000;
+// 缓存条目接口
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl: number; // 生存时间（毫秒）
+  key: string;
+}
 
-  set(key: string, value: any, ttl: number = 3600000, tags?: string[]): void {
-    // Implement LRU eviction if cache is full
-    if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
-      const firstKey = this.cache.keys().next().value;
-      if (firstKey !== undefined) {
-        this.cache.delete(firstKey);
-      }
-    }
+// 缓存配置接口
+interface CacheConfig {
+  maxSize: number;
+  defaultTTL: number;
+  cleanupInterval: number;
+}
 
-    this.cache.set(key, {
-      value,
-      expiry: Date.now() + ttl,
-      tags,
-    });
+// 默认缓存配置
+const DEFAULT_CONFIG: CacheConfig = {
+  maxSize: 100, // 最大缓存条目数
+  defaultTTL: 5 * 60 * 1000, // 默认5分钟
+  cleanupInterval: 60 * 1000, // 清理间隔1分钟
+};
+
+class SmartCache<T = any> {
+  private cache = new Map<string, CacheEntry<T>>();
+  private config: CacheConfig;
+  private cleanupTimer?: NodeJS.Timeout;
+
+  constructor(config: Partial<CacheConfig> = {}) {
+    this.config = { ...DEFAULT_CONFIG, ...config };
+    this.startCleanup();
   }
 
-  get(key: string): any | null {
-    const item = this.cache.get(key);
+  /**
+   * 设置缓存
+   */
+  set(key: string, data: T, ttl?: number): void {
+    const entry: CacheEntry<T> = {
+      data,
+      timestamp: Date.now(),
+      ttl: ttl || this.config.defaultTTL,
+      key,
+    };
 
-    if (!item) return null;
+    // 如果缓存已满，删除最旧的条目
+    if (this.cache.size >= this.config.maxSize) {
+      this.evictOldest();
+    }
 
-    if (Date.now() > item.expiry) {
+    this.cache.set(key, entry);
+  }
+
+  /**
+   * 获取缓存
+   */
+  get(key: string): T | null {
+    const entry = this.cache.get(key);
+    
+    if (!entry) {
+      return null;
+    }
+
+    // 检查是否过期
+    if (this.isExpired(entry)) {
       this.cache.delete(key);
       return null;
     }
 
-    return item.value;
+    return entry.data;
   }
 
+  /**
+   * 删除缓存
+   */
   delete(key: string): boolean {
     return this.cache.delete(key);
   }
 
-  invalidateByTag(tag: string): void {
+  /**
+   * 清空缓存
+   */
+  clear(): void {
+    this.cache.clear();
+  }
+
+  /**
+   * 检查缓存是否存在且未过期
+   */
+  has(key: string): boolean {
+    const entry = this.cache.get(key);
+    if (!entry) return false;
+    
+    if (this.isExpired(entry)) {
+      this.cache.delete(key);
+      return false;
+    }
+    
+    return true;
+  }
+
+  /**
+   * 获取缓存大小
+   */
+  size(): number {
+    return this.cache.size;
+  }
+
+  /**
+   * 获取所有缓存键
+   */
+  keys(): string[] {
+    return Array.from(this.cache.keys());
+  }
+
+  /**
+   * 检查条目是否过期
+   */
+  private isExpired(entry: CacheEntry<T>): boolean {
+    return Date.now() - entry.timestamp > entry.ttl;
+  }
+
+  /**
+   * 驱逐最旧的条目
+   */
+  private evictOldest(): void {
+    let oldestKey = '';
+    let oldestTime = Date.now();
+
+    this.cache.forEach((entry, key) => {
+      if (entry.timestamp < oldestTime) {
+        oldestTime = entry.timestamp;
+        oldestKey = key;
+      }
+    });
+
+    if (oldestKey) {
+      this.cache.delete(oldestKey);
+    }
+  }
+
+  /**
+   * 启动定期清理
+   */
+  private startCleanup(): void {
+    this.cleanupTimer = setInterval(() => {
+      this.cleanup();
+    }, this.config.cleanupInterval);
+  }
+
+  /**
+   * 清理过期条目
+   */
+  private cleanup(): void {
+    const now = Date.now();
     const keysToDelete: string[] = [];
-    this.cache.forEach((item, key) => {
-      if (item.tags?.includes(tag)) {
+
+    this.cache.forEach((entry, key) => {
+      if (now - entry.timestamp > entry.ttl) {
         keysToDelete.push(key);
       }
     });
+
     keysToDelete.forEach(key => this.cache.delete(key));
+  }
+
+  /**
+   * 销毁缓存
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+    }
+    this.cache.clear();
+  }
+}
+
+// 预定义的缓存实例
+export const translationCache = new SmartCache({
+  maxSize: 50,
+  defaultTTL: 10 * 60 * 1000, // 翻译缓存10分钟
+});
+
+export const imageCache = new SmartCache({
+  maxSize: 30,
+  defaultTTL: 30 * 60 * 1000, // 图片缓存30分钟
+});
+
+export const apiCache = new SmartCache({
+  maxSize: 100,
+  defaultTTL: 2 * 60 * 1000, // API缓存2分钟
+});
+
+export const contentCache = new SmartCache({
+  maxSize: 200,
+  defaultTTL: 5 * 60 * 1000, // 内容缓存5分钟
+});
+
+/**
+ * 缓存装饰器函数
+ */
+export function cached<T extends (...args: any[]) => Promise<any>>(
+  fn: T,
+  cache: SmartCache<any>,
+  keyGenerator?: (...args: Parameters<T>) => string,
+  ttl?: number
+): T {
+  return (async (...args: Parameters<T>) => {
+    const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args);
+    
+    // 尝试从缓存获取
+    const cached = cache.get(key);
+    if (cached !== null) {
+      return cached;
+    }
+
+    // 执行原函数
+    const result = await fn(...args);
+    
+    // 存储到缓存
+    cache.set(key, result, ttl);
+    
+    return result;
+  }) as T;
+}
+
+/**
+ * 创建缓存键生成器
+ */
+export function createKeyGenerator(prefix: string) {
+  return (...args: any[]) => {
+    return `${prefix}:${JSON.stringify(args)}`;
+  };
+}
+
+/**
+ * 内存缓存（用于客户端）
+ */
+class MemoryCache {
+  private static instance: MemoryCache;
+  private cache = new Map<string, any>();
+
+  private constructor() {}
+
+  static getInstance(): MemoryCache {
+    if (!MemoryCache.instance) {
+      MemoryCache.instance = new MemoryCache();
+    }
+    return MemoryCache.instance;
+  }
+
+  set(key: string, value: any): void {
+    this.cache.set(key, value);
+  }
+
+  get(key: string): any {
+    return this.cache.get(key);
+  }
+
+  has(key: string): boolean {
+    return this.cache.has(key);
+  }
+
+  delete(key: string): boolean {
+    return this.cache.delete(key);
   }
 
   clear(): void {
@@ -60,212 +277,4 @@ class MemoryCache {
   }
 }
 
-// Global cache instances
-export const memoryCache = new MemoryCache();
-
-// Cache key generators
-export function generateProductCacheKey(id: string): string {
-  return `product:${id}`;
-}
-
-export function generateProductsListCacheKey(filters: Record<string, any>): string {
-  const sortedFilters = Object.keys(filters)
-    .sort()
-    .map(key => `${key}:${filters[key]}`)
-    .join(':');
-  return `products:list:${sortedFilters}`;
-}
-
-export function generateArticleCacheKey(slug: string): string {
-  return `article:${slug}`;
-}
-
-export function generateArticlesListCacheKey(filters: Record<string, any>): string {
-  const sortedFilters = Object.keys(filters)
-    .sort()
-    .map(key => `${key}:${filters[key]}`)
-    .join(':');
-  return `articles:list:${sortedFilters}`;
-}
-
-export function generateCategoryCacheKey(): string {
-  return 'categories:all';
-}
-
-// Cache TTL constants (in milliseconds)
-export const CACHE_TTL = {
-  SHORT: 5 * 60 * 1000,        // 5 minutes
-  MEDIUM: 15 * 60 * 1000,      // 15 minutes
-  LONG: 60 * 60 * 1000,        // 1 hour
-  VERY_LONG: 24 * 60 * 60 * 1000, // 24 hours
-} as const;
-
-// Cache wrapper functions
-export async function cacheGet<T>(
-  key: string,
-  fetcher: () => Promise<T>,
-  ttl: number = CACHE_TTL.MEDIUM
-): Promise<T> {
-  // Try memory cache first
-  const cached = memoryCache.get(key);
-  if (cached !== null) {
-    return cached;
-  }
-
-  // Fetch fresh data
-  const fresh = await fetcher();
-
-  // Cache the result
-  memoryCache.set(key, fresh, ttl);
-
-  return fresh;
-}
-
-export function cacheSet(key: string, value: any, ttl: number = CACHE_TTL.MEDIUM, tags?: string[]): void {
-  memoryCache.set(key, value, ttl, tags);
-}
-
-export function cacheDelete(key: string): void {
-  memoryCache.delete(key);
-}
-
-export function cacheInvalidateByTag(tag: string): void {
-  memoryCache.invalidateByTag(tag);
-}
-
-// Utility function to wrap API responses with cache headers
-export function setCacheHeaders(
-  response: Response,
-  cacheControl: string = 'public, max-age=300' // 5 minutes default
-): Response {
-  response.headers.set('Cache-Control', cacheControl);
-  return response;
-}
-
-// Next.js specific caching utilities
-export const revalidatePaths = {
-  HOME: '/',
-  PRODUCTS: '/products',
-  ARTICLES: '/articles',
-  CATEGORIES: '/categories',
-} as const;
-
-export function revalidatePath(path: string): void {
-  // In Next.js 13+ with app directory, revalidation is handled differently
-  // This is a placeholder for the actual implementation
-  console.log(`Revalidating path: ${path}`);
-
-  // In a real implementation, you would call:
-  // revalidatePath(path);
-}
-
-// Cache warming utilities
-export async function warmCache(): Promise<void> {
-  try {
-    // Warm popular content caches
-    console.log('Warming cache...');
-
-    // This would typically fetch and cache popular content
-    // For now, just log the action
-    console.log('Cache warming completed');
-  } catch (error) {
-    console.error('Error warming cache:', error);
-  }
-}
-
-// Database query result caching
-export function cacheQueryResult<T>(
-  queryKey: string,
-  queryFn: () => Promise<T>,
-  ttl: number = CACHE_TTL.MEDIUM
-): Promise<T> {
-  return cacheGet(queryKey, queryFn, ttl);
-}
-
-// Static asset caching headers
-export function getStaticAssetCacheHeaders(fileExtension: string): Record<string, string> {
-  const cacheControl = fileExtension.match(/\.(js|css|woff|woff2|ttf|eot)$/)
-    ? 'public, max-age=31536000, immutable' // 1 year for static assets
-    : 'public, max-age=3600'; // 1 hour for images
-
-  return {
-    'Cache-Control': cacheControl,
-    'CDN-Cache-Control': cacheControl,
-    'Vercel-CDN-Cache-Control': cacheControl,
-  };
-}
-
-// API response caching decorator
-export function withCache<T extends (...args: any[]) => Promise<any>>(
-  fn: T,
-  cacheKeyFn: (...args: Parameters<T>) => string,
-  ttl: number = CACHE_TTL.MEDIUM,
-  tags?: string[]
-): T {
-  return (async (...args: Parameters<T>) => {
-    const cacheKey = cacheKeyFn(...args);
-
-    const cached = memoryCache.get(cacheKey);
-    if (cached !== null) {
-      return cached;
-    }
-
-    const result = await fn(...args);
-    memoryCache.set(cacheKey, result, ttl, tags);
-
-    return result;
-  }) as T;
-}
-
-// Performance monitoring for cache hits/misses
-export class CacheMetrics {
-  private static hits = 0;
-  private static misses = 0;
-
-  static recordHit(): void {
-    this.hits++;
-  }
-
-  static recordMiss(): void {
-    this.misses++;
-  }
-
-  static getHitRate(): number {
-    const total = this.hits + this.misses;
-    return total === 0 ? 0 : this.hits / total;
-  }
-
-  static getStats(): { hits: number; misses: number; hitRate: number } {
-    return {
-      hits: this.hits,
-      misses: this.misses,
-      hitRate: this.getHitRate(),
-    };
-  }
-
-  static reset(): void {
-    this.hits = 0;
-    this.misses = 0;
-  }
-}
-
-// Enhanced cache wrapper with metrics
-export async function cacheGetWithMetrics<T>(
-  key: string,
-  fetcher: () => Promise<T>,
-  ttl: number = CACHE_TTL.MEDIUM
-): Promise<T> {
-  const cached = memoryCache.get(key);
-
-  if (cached !== null) {
-    CacheMetrics.recordHit();
-    return cached;
-  }
-
-  CacheMetrics.recordMiss();
-
-  const fresh = await fetcher();
-  memoryCache.set(key, fresh, ttl);
-
-  return fresh;
-}
+export const memoryCache = MemoryCache.getInstance();

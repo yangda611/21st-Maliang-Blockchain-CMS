@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '@/middleware'
-import { LanguageProvider } from '@/hooks/use-language'
+import { LanguageUpdater } from '@/components/language-updater'
 
 interface LangLayoutProps {
   children: React.ReactNode
@@ -18,11 +18,11 @@ export default function LangLayout({ children, params }: LangLayoutProps) {
     notFound()
   }
 
-  // 注意：不要在子布局中重复渲染 <html>/<body>，避免与根布局重复导致水合告警
+  // 使用轻量级的语言更新器，而不是重复的Provider
   return (
-    <LanguageProvider initialLanguage={lang as any} isAdmin={false}>
+    <LanguageUpdater language={lang as any}>
       {children}
-    </LanguageProvider>
+    </LanguageUpdater>
   )
 }
 

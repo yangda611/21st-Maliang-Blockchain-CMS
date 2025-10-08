@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/utils/animations';
 import { AlertTriangle, Shuffle, Ban, Users } from 'lucide-react';
 import { GlowingEffect } from '@/components/ui/glowing-effect';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 
 type PainKey = 'counterfeits' | 'arbitrage' | 'trust' | 'whackamole';
 
@@ -117,7 +118,14 @@ export default function PainPointsSection({ lang = 'zh', imageMap }: PainPointsS
                   />
                   <div className="relative flex h-full flex-col justify-between gap-6 overflow-hidden rounded-xl border-[0.75px] bg-background/80 backdrop-blur-sm p-6 shadow-sm dark:shadow-[0px_0px_27px_0px_rgba(45,45,45,0.3)] md:p-8">
                     {image && (
-                      <img src={image.src} alt={image.alt || p.title} className="absolute inset-0 h-full w-full object-cover opacity-15" />
+                      <OptimizedImage
+                        src={image.src}
+                        alt={image.alt || p.title}
+                        className="absolute inset-0 h-full w-full object-cover opacity-15"
+                        width={400}
+                        height={300}
+                        priority={idx < 2} // 前两张图片优先加载
+                      />
                     )}
                     <div className="relative flex flex-1 flex-col justify-between gap-4">
                       <div className="w-fit rounded-lg border-[0.75px] border-border bg-muted p-3">

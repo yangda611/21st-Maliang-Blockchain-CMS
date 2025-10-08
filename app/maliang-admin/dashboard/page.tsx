@@ -2,13 +2,29 @@
 /**
  * Admin Dashboard Home Page
  * Overview of CMS statistics and quick actions
+ * 优化版本：使用代码分割和懒加载
  */
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentAdmin, getSupabaseClient } from '@/lib/supabase';
+import { AdminLazyWrapper } from '@/components/ui/lazy-wrapper';
 import AdminLayout from '@/components/admin/admin-layout';
-import DashboardOverview from '@/components/admin/dashboard-overview';
+
+// 懒加载 DashboardOverview 组件
+const DashboardOverview = () => (
+  <AdminLazyWrapper
+    loader={() => import('@/components/admin/dashboard-overview')}
+    fallback={
+      <div className="p-6 text-white/70">
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/50 mr-3"></div>
+          正在加载仪表板...
+        </div>
+      </div>
+    }
+  />
+);
 
 export default function DashboardPage() {
   const router = useRouter();

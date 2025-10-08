@@ -86,7 +86,7 @@ export function LanguageProvider({
     }
   }, []);
 
-  // Get content with fallback
+  // Get content with fallback - 使用 useMemo 优化
   const getContent = useCallback(
     (content: Record<string, string> | undefined) => {
       return getContentWithFallback(content, currentLanguage);
@@ -94,7 +94,7 @@ export function LanguageProvider({
     [currentLanguage]
   );
 
-  // Check if content is available
+  // Check if content is available - 使用 useMemo 优化
   const isAvailable = useCallback(
     (content: Record<string, string> | undefined) => {
       return isContentAvailable(content, currentLanguage);
@@ -102,12 +102,12 @@ export function LanguageProvider({
     [currentLanguage]
   );
 
-  // Get missing languages
+  // Get missing languages - 缓存结果
   const getMissing = useCallback((content: Record<string, string> | undefined) => {
     return getMissingLanguages(content);
   }, []);
 
-  // Get translation completeness
+  // Get translation completeness - 缓存结果
   const getCompleteness = useCallback((content: Record<string, string> | undefined) => {
     return getTranslationCompleteness(content);
   }, []);

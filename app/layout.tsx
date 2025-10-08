@@ -5,12 +5,28 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { LanguageProvider } from '@/hooks/use-language'
 import { TranslationProvider } from '@/components/translation-provider'
 import { SUPPORTED_LANGUAGES } from '@/middleware'
+import { Suspense } from 'react'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true
+})
 
 export const metadata: Metadata = {
   title: 'Codexia Blockchain CMS',
   description: 'Blockchain traceability, anti-counterfeit and enterprise branding CMS',
+}
+
+// 优化后的翻译组件包装器
+function OptimizedTranslationProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<div>{children}</div>}>
+      <TranslationProvider>
+        {children}
+      </TranslationProvider>
+    </Suspense>
+  )
 }
 
 export default function RootLayout({
@@ -20,21 +36,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh" suppressHydrationWarning>
-      <body>
+      <body className={inter.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
-          <TranslationProvider>
+          <OptimizedTranslationProvider>
             <LanguageProvider
               isAdmin={false}
               initialLanguage="zh"
             >
               {children}
             </LanguageProvider>
-          </TranslationProvider>
+          </OptimizedTranslationProvider>
         </ThemeProvider>
       </body>
     </html>
