@@ -5,13 +5,14 @@
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { detectLanguageFromIP } from '@/utils/language-detection'
 
 // Supported languages
 export const SUPPORTED_LANGUAGES = ['zh', 'en', 'ja', 'ko', 'ar', 'es'] as const
 export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
 
 // Default language
-export const DEFAULT_LANGUAGE: SupportedLanguage = 'zh'
+export const DEFAULT_LANGUAGE: SupportedLanguage = 'en'
 
 // Language detection helpers
 function getLanguageFromPathname(pathname: string): SupportedLanguage | null {
@@ -55,9 +56,52 @@ function getLanguageFromCookie(request: NextRequest): SupportedLanguage | null {
   return null
 }
 
-function getPreferredLanguage(request: NextRequest): SupportedLanguage {
-  // Priority: cookie > accept-language > default
+async function getLanguageFromIP(request: NextRequest): Promise<SupportedLanguage | null> {
+  try {
+    // Check for development IP simulation via URL parameter
+    const { searchParams } = new URL(request.url)
+    const simulatedIP = searchParams.get('simulate_ip')
+    
+    let ip: string
+    if (simulatedIP && process.env.NODE_ENV === 'development') {
+      ip = simulatedIP
+      console.log('Development mode: Using simulated IP from URL parameter:', ip)
+    } else {
+      // Get client IP address
+      const forwarded = request.headers.get('x-forwarded-for')
+      const realIP = request.headers.get('x-real-ip')
+      ip = forwarded ? forwarded.split(',')[0] : realIP || 'unknown'
+    }
+    
+    console.log('Middleware IP Detection:', {
+      ip,
+      simulatedIP,
+      forwarded: request.headers.get('x-forwarded-for'),
+      realIP: request.headers.get('x-real-ip'),
+      userAgent: request.headers.get('user-agent')
+    })
+    
+    if (ip === 'unknown' || !ip) {
+      console.log('No IP found, skipping IP detection')
+      return null
+    }
+
+    // Detect language from IP
+    const language = await detectLanguageFromIP(ip)
+    console.log('Detected language from IP:', ip, '->', language)
+    return language
+  } catch (error) {
+    console.error('IP language detection failed:', error)
+    return null
+  }
+}
+
+async function getPreferredLanguage(request: NextRequest): Promise<SupportedLanguage> {
+  // Priority: IP detection > cookie > accept-language > default
+  const ipLanguage = await getLanguageFromIP(request)
+  
   return (
+    ipLanguage ||
     getLanguageFromCookie(request) ||
     getLanguageFromAcceptLanguage(request.headers.get('accept-language')) ||
     DEFAULT_LANGUAGE
@@ -108,18 +152,18 @@ function createLanguageRedirect(language: SupportedLanguage, pathname: string): 
   return response
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Handle root path - redirect to preferred language
   if (pathname === '/') {
-    const preferredLanguage = getPreferredLanguage(request)
+    const preferredLanguage = await getPreferredLanguage(request)
     return createLanguageRedirect(preferredLanguage, '/')
   }
 
   // Handle other paths that need language prefix
   if (shouldRedirectToLanguage(pathname)) {
-    const preferredLanguage = getPreferredLanguage(request)
+    const preferredLanguage = await getPreferredLanguage(request)
     return createLanguageRedirect(preferredLanguage, pathname)
   }
 

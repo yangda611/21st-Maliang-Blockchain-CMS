@@ -199,6 +199,11 @@ export const contentCache = new SmartCache({
   defaultTTL: 5 * 60 * 1000, // 内容缓存5分钟
 });
 
+export const geoLocationCache = new SmartCache({
+  maxSize: 1000,
+  defaultTTL: 24 * 60 * 60 * 1000, // IP地理位置缓存24小时
+});
+
 /**
  * 缓存装饰器函数
  */

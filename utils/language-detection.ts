@@ -4,6 +4,7 @@
  */
 
 import type { SupportedLanguage } from '@/types/content';
+import { geoLocationCache } from '@/lib/cache';
 
 // Supported languages configuration
 export const SUPPORTED_LANGUAGES: SupportedLanguage[] = ['zh', 'en', 'ja', 'ko', 'ar', 'es'];
@@ -49,15 +50,19 @@ const COUNTRY_LANGUAGE_MAP: Record<string, SupportedLanguage> = {
  */
 export async function detectLanguageFromIP(ipAddress: string): Promise<SupportedLanguage> {
   try {
-    // In production, use a geolocation service like ipapi.co or ip-api.com
-    // For now, return default language
-    // Example API call:
-    // const response = await fetch(`https://ipapi.co/${ipAddress}/json/`);
-    // const data = await response.json();
-    // const countryCode = data.country_code;
+    // Check cache first
+    const cacheKey = `country_${ipAddress}`;
+    const cachedCountry = geoLocationCache.get(cacheKey) as string;
     
-    // Simulate country detection (replace with actual API call)
+    if (cachedCountry) {
+      return COUNTRY_LANGUAGE_MAP[cachedCountry] || DEFAULT_FRONTEND_LANGUAGE;
+    }
+
+    // Get country from IP
     const countryCode = await getCountryFromIP(ipAddress);
+    
+    // Cache the result
+    geoLocationCache.set(cacheKey, countryCode);
     
     return COUNTRY_LANGUAGE_MAP[countryCode] || DEFAULT_FRONTEND_LANGUAGE;
   } catch (error) {
@@ -67,18 +72,144 @@ export async function detectLanguageFromIP(ipAddress: string): Promise<Supported
 }
 
 /**
- * Get country code from IP address
+ * Get country code from IP address using ip-api.com
  * @param ipAddress - User's IP address
  * @returns Country code
  */
 async function getCountryFromIP(ipAddress: string): Promise<string> {
-  // TODO: Implement actual geolocation API call
-  // Example using ipapi.co:
-  // const response = await fetch(`https://ipapi.co/${ipAddress}/country/`);
-  // return await response.text();
+  try {
+    // Skip localhost and private IPs
+    if (isPrivateIP(ipAddress) || isLocalhost(ipAddress)) {
+      // For development, check if there's a simulated IP in environment or cache
+      if (process.env.NODE_ENV === 'development') {
+        const simulatedIP = process.env.SIMULATE_IP_FOR_TESTING;
+        if (simulatedIP) {
+          console.log(`Development mode: Using simulated IP ${simulatedIP} instead of localhost ${ipAddress}`);
+          return await getCountryFromIP(simulatedIP);
+        }
+      }
+      return 'US'; // Default for development
+    }
+
+    // Normalize IPv6 addresses for API compatibility
+    let normalizedIP = ipAddress;
+    if (isIPv6(ipAddress)) {
+      normalizedIP = normalizeIPv6ForAPI(ipAddress);
+      console.log(`IPv6 address detected: ${ipAddress} -> normalized to: ${normalizedIP}`);
+      
+      // If we still have an IPv6 address after normalization and it's not localhost
+      // we need to handle it specially since most APIs don't support IPv6 geolocation
+      if (isIPv6(normalizedIP)) {
+        console.log(`IPv6 address ${normalizedIP} not supported by geolocation API, using default`);
+        return 'US'; // Default for unsupported IPv6
+      }
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+    const response = await fetch(`http://ip-api.com/json/${normalizedIP}?fields=status,countryCode`, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Maliang-CMS/1.0'
+      }
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.status === 'success' && data.countryCode) {
+      return data.countryCode.toUpperCase();
+    }
+
+    throw new Error('Invalid response from ip-api.com');
+  } catch (error) {
+    console.error('Failed to get country from IP:', error, {
+      originalIP: ipAddress,
+      errorType: error instanceof Error ? error.constructor.name : 'Unknown'
+    });
+    return 'US'; // Default fallback
+  }
+}
+
+/**
+ * Check if IP address is IPv6
+ * @param ipAddress - IP address to check
+ * @returns True if IP is IPv6
+ */
+function isIPv6(ipAddress: string): boolean {
+  return ipAddress.includes(':');
+}
+
+/**
+ * Normalize IPv6 address for API compatibility
+ * @param ipAddress - IPv6 address
+ * @returns Normalized IPv4-compatible address or string for API
+ */
+function normalizeIPv6ForAPI(ipAddress: string): string {
+  // For localhost IPv6
+  if (ipAddress === '::1' || ipAddress === '0:0:0:0:0:0:0:1') {
+    return '127.0.0.1'; // Convert to IPv4 localhost for API compatibility
+  }
   
-  // For development, return default
-  return 'US';
+  // For IPv4-mapped IPv6 addresses (::ffff:x.x.x.x)
+  const ipv4Match = ipAddress.match(/::ffff:(\d+\.\d+\.\d+\.\d+)/);
+  if (ipv4Match) {
+    return ipv4Match[1];
+  }
+  
+  // For other IPv6 addresses, return a special handling
+  // Some geolocation APIs don't support IPv6, so we'll use a fallback
+  return ipAddress;
+}
+
+/**
+ * Check if IP address is private/local
+ * @param ipAddress - IP address to check
+ * @returns True if IP is private
+ */
+function isPrivateIP(ipAddress: string): boolean {
+  // Check for private IPv4 ranges
+  const privateIPv4Ranges = [
+    /^10\./,
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./,
+    /^192\.168\./,
+    /^127\./,
+    /^169\.254\./,
+  ];
+
+  // Check for private IPv6 ranges
+  const privateIPv6Ranges = [
+    /^::1$/,           // IPv6 localhost
+    /^fc00:/,          // Unique local address
+    /^fe80:/,          // Link-local address
+    /^::ffff:10:/,     // IPv4-mapped private network 10.0.0.0/8
+    /^::ffff:172\.(1[6-9]|2[0-9]|3[0-1])/, // IPv4-mapped private network 172.16.0.0/12
+    /^::ffff:192\.168\./, // IPv4-mapped private network 192.168.0.0/16
+    /^::ffff:127\./,   // IPv4-mapped localhost
+    /^::ffff:169\.254\./, // IPv4-mapped link-local
+  ];
+
+  return privateIPv4Ranges.some(range => range.test(ipAddress)) ||
+         privateIPv6Ranges.some(range => range.test(ipAddress));
+}
+
+/**
+ * Check if IP address is localhost
+ * @param ipAddress - IP address to check
+ * @returns True if IP is localhost
+ */
+function isLocalhost(ipAddress: string): boolean {
+  return ipAddress === 'localhost' || 
+         ipAddress === '::1' || 
+         ipAddress === '0:0:0:0:0:0:0:1' ||
+         ipAddress.startsWith('127.') ||
+         ipAddress === '0.0.0.0';
 }
 
 /**
